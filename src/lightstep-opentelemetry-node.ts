@@ -1,4 +1,4 @@
-import { ConsoleLogger, LogLevel, getEnv } from '@opentelemetry/core';
+import { ConsoleLogger, LogLevel } from '@opentelemetry/core';
 import { Logger } from '@opentelemetry/api';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import {
@@ -12,6 +12,7 @@ import {
 
 const OPTION_ALIAS_MAP: { [key: string]: string } = {
   LS_ACCESS_TOKEN: 'token',
+  LS_SERVICE_NAME: 'serviceName',
   LS_SATELLITE_URL: 'satelliteUrl',
 };
 
@@ -23,7 +24,7 @@ let logger: Logger;
 let fail: (message: string) => void;
 
 export function configureOpenTelemetry(
-  config: Partial<LightstepNodeSDKConfiguration>
+  config: Partial<LightstepNodeSDKConfiguration> = {}
 ): NodeSDK {
   logger = config.logger || new ConsoleLogger(config.logLevel || LogLevel.INFO);
   fail = config.failureHandler || defaultFailureHandler(logger);
@@ -42,10 +43,8 @@ function coalesceConfig(
 }
 
 function configFromEnvironment(): { [key: string]: any } {
-  //@todo: should core export the ENVIRONMENT type and should we use that here?
-  const env: { [key: string]: any } = getEnv();
   return Object.entries(OPTION_ALIAS_MAP).reduce((acc, [envName, optName]) => {
-    const value = env[envName];
+    const value = process.env[envName];
     if (value) acc[optName] = value;
     return acc;
   }, {} as { [key: string]: any });
