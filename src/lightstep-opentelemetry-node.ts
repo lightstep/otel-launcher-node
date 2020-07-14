@@ -13,11 +13,11 @@ import {
 const OPTION_ALIAS_MAP: { [key: string]: string } = {
   LS_ACCESS_TOKEN: 'token',
   LS_SERVICE_NAME: 'serviceName',
-  LS_SATELLITE_URL: 'satelliteUrl',
+  OTEL_EXPORTER_OTLP_SPAN_ENDPOINT: 'spanEndpoint',
 };
 
 const DEFAULTS: Partial<LightstepNodeSDKConfiguration> = {
-  satelliteUrl: 'https://ingest.lightstep.com:443/api/v2/otel/trace',
+  spanEndpoint: 'https://ingest.lightstep.com:443/api/v2/otel/trace',
 };
 
 let logger: Logger;
@@ -82,9 +82,9 @@ function validateConfiguration(config: Partial<LightstepNodeSDKConfiguration>) {
 }
 
 function validateLicenseKey(config: Partial<LightstepNodeSDKConfiguration>) {
-  if (!config.token && config.satelliteUrl === DEFAULTS.satelliteUrl) {
+  if (!config.token && config.spanEndpoint === DEFAULTS.spanEndpoint) {
     fail(
-      `Invalid configuration: access token missing, must be set when reporting to ${config.satelliteUrl}. Set LS_ACCESS_TOKEN env var or configure token in code`
+      `Invalid configuration: access token missing, must be set when reporting to ${config.spanEndpoint}. Set LS_ACCESS_TOKEN env var or configure token in code`
     );
   }
 
@@ -112,7 +112,7 @@ function configureTraceExporter(
   config.traceExporter = new CollectorTraceExporter({
     protocolNode: CollectorProtocolNode.HTTP_JSON,
     serviceName: config.serviceName,
-    url: config.satelliteUrl,
+    url: config.spanEndpoint,
     headers: {
       'lightstep-access-token': config.token,
     },

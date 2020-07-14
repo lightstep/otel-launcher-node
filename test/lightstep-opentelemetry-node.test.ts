@@ -63,7 +63,7 @@ describe('Lightstep OpenTelemetry Node', () => {
       it('is not requried for custom sat', () => {
         const sdk = lightstep.configureOpenTelemetry({
           serviceName: 'test-service',
-          satelliteUrl: 'http://localhost:8360',
+          spanEndpoint: 'http://localhost:8360',
         });
 
         assert.ok(sdk instanceof NodeSDK);
