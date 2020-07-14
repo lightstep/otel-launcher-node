@@ -26,7 +26,7 @@ let fail: (message: string) => void;
 export function configureOpenTelemetry(
   config: Partial<LightstepNodeSDKConfiguration> = {}
 ): NodeSDK {
-  logger = config.logger || new ConsoleLogger(config.logLevel || LogLevel.INFO);
+  logger = setupLogger(config);
   fail = config.failureHandler || defaultFailureHandler(logger);
 
   config = coalesceConfig(config);
@@ -34,6 +34,25 @@ export function configureOpenTelemetry(
   configureTraceExporter(config);
 
   return new NodeSDK(config);
+}
+
+/**
+ * Setup up logger to use for LOCL. This may or may not be the logger configured
+ * for OpenTelemetry. This is so we can print meaningful error messages when
+ * configuration fails.
+ */
+function setupLogger(config: Partial<LightstepNodeSDKConfiguration>): Logger {
+  if (config.logger) return config.logger;
+
+  let logLevel: LogLevel = config.logLevel ?? LogLevel.INFO;
+
+  if (process.env.OTEL_LOG_LEVEL) {
+    logLevel =
+      LogLevel[
+        process.env.OTEL_LOG_LEVEL.toUpperCase() as keyof typeof LogLevel
+      ] ?? logLevel;
+  }
+  return new ConsoleLogger(logLevel);
 }
 
 function coalesceConfig(
