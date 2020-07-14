@@ -5,4 +5,7 @@ export interface LightstepNodeSDKConfiguration extends NodeSDKConfiguration {
   satelliteUrl?: string;
   serviceName: string;
   serviceVersion?: string;
+  failureHandler?: (message: string) => void;
 }
+
+export class LightstepConfigurationError extends Error {}
