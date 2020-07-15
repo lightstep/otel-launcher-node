@@ -71,12 +71,12 @@ function coalesceConfig(
   return Object.assign({}, DEFAULTS, config, configFromEnvironment());
 }
 
-function configFromEnvironment(): { [key: string]: any } {
+function configFromEnvironment(): { [key: string]: string } {
   return Object.entries(OPTION_ALIAS_MAP).reduce((acc, [envName, optName]) => {
     const value = process.env[envName];
     if (value) acc[optName] = value;
     return acc;
-  }, {} as { [key: string]: any });
+  }, {} as { [key: string]: string });
 }
 
 function defaultFailureHandler(logger: Logger) {
