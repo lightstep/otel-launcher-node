@@ -142,13 +142,13 @@ const PROPAGATOR_LOOKUP_MAP: {
 
 function createPropagator(name: string): HttpTextPropagator {
   const propagatorClass = PROPAGATOR_LOOKUP_MAP[name];
-  if (propagatorClass) {
-    return new propagatorClass();
-  } else {
-    throw new LightstepConfigurationError(
+  if (!propagatorClass) {
+    fail(
       `Invalid configuration: unknown propagator specified: ${name}. Supported propagators are: b3, tracecontext, correlationcontext`
     );
   }
+
+  return new propagatorClass();
 }
 
 function configurePropagation(config: Partial<LightstepNodeSDKConfiguration>) {
