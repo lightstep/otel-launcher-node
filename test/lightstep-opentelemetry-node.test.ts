@@ -10,6 +10,9 @@ import {
 
 describe('Lightstep OpenTelemetry Node', () => {
   describe('configureSDK', () => {
+    const token = 'x'.repeat(32);
+    const serviceName = 'test-service';
+    const minimalConfig = { token, serviceName };
     beforeEach(() => {
       delete process.env.LS_ACCESS_TOKEN;
       delete process.env.LS_SERVICE_NAME;
@@ -25,8 +28,8 @@ describe('Lightstep OpenTelemetry Node', () => {
     describe('minimal configuration', () => {
       it('should require access token and serviceName', () => {
         const sdk = lightstep.configureOpenTelemetry({
-          token: 'x'.repeat(32),
-          serviceName: 'test-service',
+          token,
+          serviceName,
         });
         assert.ok(sdk instanceof NodeSDK);
       });
@@ -35,7 +38,7 @@ describe('Lightstep OpenTelemetry Node', () => {
     describe('service name', () => {
       it('is required', () => {
         assert.throws(
-          () => lightstep.configureOpenTelemetry({ token: 'x'.repeat(32) }),
+          () => lightstep.configureOpenTelemetry({ token }),
           err => {
             assert(err instanceof LightstepConfigurationError);
             assert.match(
@@ -49,9 +52,7 @@ describe('Lightstep OpenTelemetry Node', () => {
 
       it('should be settable by environment', () => {
         process.env.LS_SERVICE_NAME = 'test-service';
-        const sdk = lightstep.configureOpenTelemetry({
-          token: 'x'.repeat(32),
-        });
+        const sdk = lightstep.configureOpenTelemetry({ token });
         assert.ok(sdk instanceof NodeSDK);
       });
     });
@@ -59,8 +60,7 @@ describe('Lightstep OpenTelemetry Node', () => {
     describe('access token', () => {
       it('is required for prod', () => {
         assert.throws(
-          () =>
-            lightstep.configureOpenTelemetry({ serviceName: 'test-service' }),
+          () => lightstep.configureOpenTelemetry({ serviceName }),
           err => {
             assert(err instanceof LightstepConfigurationError);
             assert.match(
@@ -74,7 +74,7 @@ describe('Lightstep OpenTelemetry Node', () => {
 
       it('is not required for custom sat', () => {
         const sdk = lightstep.configureOpenTelemetry({
-          serviceName: 'test-service',
+          serviceName,
           spanEndpoint: 'http://localhost:8360',
         });
 
@@ -82,20 +82,15 @@ describe('Lightstep OpenTelemetry Node', () => {
       });
 
       it('should be settable by environment', () => {
-        process.env.LS_ACCESS_TOKEN = 'x'.repeat(32);
-        const sdk = lightstep.configureOpenTelemetry({
-          serviceName: 'test-service',
-        });
+        process.env.LS_ACCESS_TOKEN = token;
+        const sdk = lightstep.configureOpenTelemetry({ serviceName });
         assert.ok(sdk instanceof NodeSDK);
       });
     });
 
     describe('propagation', () => {
       it('defaults to b3', () => {
-        const sdk = lightstep.configureOpenTelemetry({
-          token: 'x'.repeat(32),
-          serviceName: 'test-service',
-        });
+        const sdk = lightstep.configureOpenTelemetry(minimalConfig);
 
         sdk.start();
 
@@ -106,8 +101,8 @@ describe('Lightstep OpenTelemetry Node', () => {
 
       it('can be assigned using a comma delimited string', () => {
         const sdk = lightstep.configureOpenTelemetry({
-          token: 'x'.repeat(32),
-          serviceName: 'test-service',
+          token,
+          serviceName,
           propagators: 'b3,tracecontext',
         });
 
@@ -123,10 +118,7 @@ describe('Lightstep OpenTelemetry Node', () => {
 
       it('can be assigned using a comma delimited string from environment', () => {
         process.env.OTEL_PROPAGATORS = 'b3,tracecontext';
-        const sdk = lightstep.configureOpenTelemetry({
-          token: 'x'.repeat(32),
-          serviceName: 'test-service',
-        });
+        const sdk = lightstep.configureOpenTelemetry(minimalConfig);
 
         sdk.start();
 
@@ -142,8 +134,8 @@ describe('Lightstep OpenTelemetry Node', () => {
         assert.throws(
           () => {
             const sdk = lightstep.configureOpenTelemetry({
-              token: 'x'.repeat(32),
-              serviceName: 'test-service',
+              token,
+              serviceName,
               propagators: 'b3,foo',
             });
 
