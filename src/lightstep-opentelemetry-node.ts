@@ -1,5 +1,12 @@
-import { ConsoleLogger, LogLevel } from '@opentelemetry/core';
-import { Logger } from '@opentelemetry/api';
+import {
+  ConsoleLogger,
+  LogLevel,
+  B3Propagator,
+  CompositePropagator,
+  HttpCorrelationContext,
+  HttpTraceContext,
+} from '@opentelemetry/core';
+import { HttpTextPropagator, Logger } from '@opentelemetry/api';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import {
   LightstepNodeSDKConfiguration,
@@ -14,10 +21,12 @@ const OPTION_ALIAS_MAP: { [key: string]: string } = {
   LS_ACCESS_TOKEN: 'token',
   LS_SERVICE_NAME: 'serviceName',
   OTEL_EXPORTER_OTLP_SPAN_ENDPOINT: 'spanEndpoint',
+  OTEL_PROPAGATORS: 'propagators',
 };
 
 const DEFAULTS: Partial<LightstepNodeSDKConfiguration> = {
   spanEndpoint: 'https://ingest.lightstep.com:443/api/v2/otel/trace',
+  propagators: 'b3',
 };
 
 let logger: Logger;
@@ -31,6 +40,7 @@ export function configureOpenTelemetry(
 
   config = coalesceConfig(config);
   validateConfiguration(config);
+  configurePropagation(config);
   configureTraceExporter(config);
 
   return new NodeSDK(config);
@@ -117,4 +127,37 @@ function configureTraceExporter(
       'lightstep-access-token': config.token,
     },
   });
+}
+
+const PROPAGATOR_LOOKUP_MAP: {
+  [key: string]:
+    | typeof B3Propagator
+    | typeof HttpTraceContext
+    | typeof HttpCorrelationContext;
+} = {
+  b3: B3Propagator,
+  tracecontext: HttpTraceContext,
+  correlationcontext: HttpCorrelationContext,
+};
+
+function createPropagator(name: string): HttpTextPropagator {
+  const propagatorClass = PROPAGATOR_LOOKUP_MAP[name];
+  if (propagatorClass) {
+    return new propagatorClass();
+  } else {
+    throw new LightstepConfigurationError(
+      `Invalid configuration: unknown propagator specified: ${name}. Supported propagators are: b3, tracecontext, correlationcontext`
+    );
+  }
+}
+
+function configurePropagation(config: Partial<LightstepNodeSDKConfiguration>) {
+  const propagators: Array<HttpTextPropagator> = (
+    config.propagators?.split(',') || ['b3']
+  ).map(name => createPropagator(name.trim()));
+  if (propagators.length > 1) {
+    config.httpTextPropagator = new CompositePropagator({ propagators });
+  } else {
+    config.httpTextPropagator = propagators[0];
+  }
 }

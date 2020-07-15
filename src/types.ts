@@ -5,6 +5,7 @@ export interface LightstepNodeSDKConfiguration extends NodeSDKConfiguration {
   spanEndpoint?: string;
   serviceName: string;
   serviceVersion?: string;
+  propagators?: string;
   failureHandler?: (message: string) => void;
 }
 
