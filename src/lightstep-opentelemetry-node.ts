@@ -32,6 +32,12 @@ const DEFAULTS: Partial<LightstepNodeSDKConfiguration> = {
 let logger: Logger;
 let fail: (message: string) => void;
 
+/**
+ * Returns a NodeSDK object configured using Lightstep defaults with user
+ * overrides. Call start on the returned NodeSDK instance to apply the
+ * configuration and start the export pipeline.
+ * @param config
+ */
 export function configureOpenTelemetry(
   config: Partial<LightstepNodeSDKConfiguration> = {}
 ): NodeSDK {
@@ -65,12 +71,21 @@ function setupLogger(config: Partial<LightstepNodeSDKConfiguration>): Logger {
   return new ConsoleLogger(logLevel);
 }
 
+/**
+ * Merges configuration with the follow precedence: config from environment,
+ * code level configuration, default configuration. Returns a new configuration.
+ * @param config
+ */
 function coalesceConfig(
   config: Partial<LightstepNodeSDKConfiguration>
 ): Partial<LightstepNodeSDKConfiguration> {
   return Object.assign({}, DEFAULTS, config, configFromEnvironment());
 }
 
+/**
+ * Iterates through known environment variable keys and returns an object with
+ * keys using lightstep conventions
+ */
 function configFromEnvironment(): { [key: string]: string } {
   return Object.entries(OPTION_ALIAS_MAP).reduce((acc, [envName, optName]) => {
     const value = process.env[envName];
@@ -79,6 +94,12 @@ function configFromEnvironment(): { [key: string]: string } {
   }, {} as { [key: string]: string });
 }
 
+/**
+ * The default failure handler. It logs a message at error level and raises
+ * an exception. Can be overridden by passing a custom failureHandler in
+ * LightstepNodeSDKConfiguration
+ * @param logger
+ */
 function defaultFailureHandler(logger: Logger) {
   return (message: string) => {
     logger.error(message);
@@ -86,12 +107,22 @@ function defaultFailureHandler(logger: Logger) {
   };
 }
 
+/**
+ * Makes upfront validations on configuration issues known to cause failures.
+ * @param config
+ */
 function validateConfiguration(config: Partial<LightstepNodeSDKConfiguration>) {
-  validateLicenseKey(config);
+  validateToken(config);
   validateServiceName(config);
 }
 
-function validateLicenseKey(config: Partial<LightstepNodeSDKConfiguration>) {
+/**
+ * Validates that a token is present if the spanEndpoint is for LS SaaS.
+ * The token might be optional for other spanEndpoints, but will depend on their
+ * configuration. If a token is provided, we validate its length.
+ * @param config
+ */
+function validateToken(config: Partial<LightstepNodeSDKConfiguration>) {
   if (!config.token && config.spanEndpoint === DEFAULTS.spanEndpoint) {
     fail(
       `Invalid configuration: access token missing, must be set when reporting to ${config.spanEndpoint}. Set LS_ACCESS_TOKEN env var or configure token in code`
@@ -107,6 +138,10 @@ function validateLicenseKey(config: Partial<LightstepNodeSDKConfiguration>) {
   }
 }
 
+/**
+ * Validates that the service name is present
+ * @param config
+ */
 function validateServiceName(config: Partial<LightstepNodeSDKConfiguration>) {
   if (!config.serviceName)
     fail(
@@ -114,6 +149,11 @@ function validateServiceName(config: Partial<LightstepNodeSDKConfiguration>) {
     );
 }
 
+/**
+ * Configures export as JSON over HTTP to the configured spanEndpoint
+ * @param config
+ * @todo support more formats, allow for optional access token
+ */
 function configureTraceExporter(
   config: Partial<LightstepNodeSDKConfiguration>
 ) {
@@ -140,6 +180,12 @@ const PROPAGATOR_LOOKUP_MAP: {
   correlationcontext: HttpCorrelationContext,
 };
 
+/**
+ * Instantiates a propagator based on a string name where the name appears in
+ * as a key in the PROPAGATOR_LOOKUP_MAP. Current supported names are: b3,
+ * tracecontext, correlationcontext.
+ * @param name
+ */
 function createPropagator(name: string): HttpTextPropagator {
   const propagatorClass = PROPAGATOR_LOOKUP_MAP[name];
   if (!propagatorClass) {
@@ -151,6 +197,13 @@ function createPropagator(name: string): HttpTextPropagator {
   return new propagatorClass();
 }
 
+/**
+ * Configures propagators based on a comma delimited string from the config.
+ * If more than one propagator is specified, a composite propagator will be
+ * configured with mutiple formats. Supported string formats are b3,
+ * tracecontext, and correlationcontext.
+ * @param config
+ */
 function configurePropagation(config: Partial<LightstepNodeSDKConfiguration>) {
   const propagators: Array<HttpTextPropagator> = (
     config.propagators?.split(',') || ['b3']
