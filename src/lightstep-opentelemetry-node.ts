@@ -17,7 +17,16 @@ import {
   CollectorProtocolNode,
 } from '@opentelemetry/exporter-collector';
 
-const OPTION_ALIAS_MAP: { [key: string]: string } = {
+interface LightstepEnv {
+  LS_ACCESS_TOKEN?: string;
+  LS_SERVICE_NAME?: string;
+  OTEL_EXPORTER_OTLP_SPAN_ENDPOINT?: string;
+  OTEL_PROPAGATORS?: string;
+}
+
+const OPTION_ALIAS_MAP: {
+  [K in keyof LightstepEnv]: keyof LightstepNodeSDKConfiguration;
+} = {
   LS_ACCESS_TOKEN: 'token',
   LS_SERVICE_NAME: 'serviceName',
   OTEL_EXPORTER_OTLP_SPAN_ENDPOINT: 'spanEndpoint',
@@ -86,12 +95,13 @@ function coalesceConfig(
  * Iterates through known environment variable keys and returns an object with
  * keys using lightstep conventions
  */
-function configFromEnvironment(): { [key: string]: string } {
+function configFromEnvironment(): Partial<LightstepNodeSDKConfiguration> {
+  const env: LightstepEnv = process.env as LightstepEnv;
   return Object.entries(OPTION_ALIAS_MAP).reduce((acc, [envName, optName]) => {
-    const value = process.env[envName];
-    if (value) acc[optName] = value;
+    const value = env[envName as keyof LightstepEnv];
+    if (value && optName) acc[optName] = value;
     return acc;
-  }, {} as { [key: string]: string });
+  }, {} as Record<string, string>);
 }
 
 /**
