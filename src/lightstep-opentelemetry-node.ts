@@ -152,20 +152,21 @@ function validateServiceName(config: Partial<LightstepNodeSDKConfiguration>) {
 /**
  * Configures export as JSON over HTTP to the configured spanEndpoint
  * @param config
- * @todo support more formats, allow for optional access token
+ * @todo support more formats
  */
 function configureTraceExporter(
   config: Partial<LightstepNodeSDKConfiguration>
 ) {
   if (config.traceExporter) return;
 
+  const headers: { [key: string]: string } = {};
+  if (config.token) headers['lightstep-access-token'] = config.token;
+
   config.traceExporter = new CollectorTraceExporter({
     protocolNode: CollectorProtocolNode.HTTP_JSON,
     serviceName: config.serviceName,
     url: config.spanEndpoint,
-    headers: {
-      'lightstep-access-token': config.token,
-    },
+    headers,
   });
 }
 
