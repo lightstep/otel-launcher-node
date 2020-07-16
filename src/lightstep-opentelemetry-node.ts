@@ -1,61 +1,24 @@
 import {
   ConsoleLogger,
   LogLevel,
-  B3Propagator,
   CompositePropagator,
-  HttpCorrelationContext,
-  HttpTraceContext,
 } from '@opentelemetry/core';
 import { HttpTextPropagator, Logger } from '@opentelemetry/api';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import {
-  LightstepNodeSDKConfiguration,
   LightstepConfigurationError,
+  LightstepNodeSDKConfiguration,
+  LightstepEnv,
+  LS_DEFAULTS,
+  LS_OPTION_ALIAS_MAP,
+  PropagationFormat,
+  PROPAGATION_FORMATS,
+  PROPAGATOR_LOOKUP_MAP,
 } from './types';
 import {
   CollectorTraceExporter,
   CollectorProtocolNode,
 } from '@opentelemetry/exporter-collector';
-
-interface LightstepEnv {
-  LS_ACCESS_TOKEN?: string;
-  LS_SERVICE_NAME?: string;
-  OTEL_EXPORTER_OTLP_SPAN_ENDPOINT?: string;
-  OTEL_PROPAGATORS?: string;
-}
-
-type PropagationFormat = 'b3' | 'tracecontext' | 'correlationcontext';
-
-const PROPAGATION_FORMATS: { [key: string]: PropagationFormat } = {
-  B3: 'b3',
-  TRACECONTEXT: 'tracecontext',
-  CORRELATIONCONTEXT: 'correlationcontext',
-};
-
-const PROPAGATOR_LOOKUP_MAP: {
-  [key: string]:
-    | typeof B3Propagator
-    | typeof HttpTraceContext
-    | typeof HttpCorrelationContext;
-} = {
-  b3: B3Propagator,
-  tracecontext: HttpTraceContext,
-  correlationcontext: HttpCorrelationContext,
-};
-
-const OPTION_ALIAS_MAP: {
-  [K in keyof LightstepEnv]: keyof LightstepNodeSDKConfiguration;
-} = {
-  LS_ACCESS_TOKEN: 'token',
-  LS_SERVICE_NAME: 'serviceName',
-  OTEL_EXPORTER_OTLP_SPAN_ENDPOINT: 'spanEndpoint',
-  OTEL_PROPAGATORS: 'propagators',
-};
-
-const DEFAULTS: Partial<LightstepNodeSDKConfiguration> = {
-  spanEndpoint: 'https://ingest.lightstep.com:443/api/v2/otel/trace',
-  propagators: PROPAGATION_FORMATS.B3,
-};
 
 let logger: Logger;
 let fail: (message: string) => void;
@@ -107,7 +70,7 @@ function setupLogger(config: Partial<LightstepNodeSDKConfiguration>): Logger {
 function coalesceConfig(
   config: Partial<LightstepNodeSDKConfiguration>
 ): Partial<LightstepNodeSDKConfiguration> {
-  return Object.assign({}, DEFAULTS, config, configFromEnvironment());
+  return Object.assign({}, LS_DEFAULTS, config, configFromEnvironment());
 }
 
 /**
@@ -116,11 +79,14 @@ function coalesceConfig(
  */
 function configFromEnvironment(): Partial<LightstepNodeSDKConfiguration> {
   const env: LightstepEnv = process.env as LightstepEnv;
-  return Object.entries(OPTION_ALIAS_MAP).reduce((acc, [envName, optName]) => {
-    const value = env[envName as keyof LightstepEnv];
-    if (value && optName) acc[optName] = value;
-    return acc;
-  }, {} as Record<string, string>);
+  return Object.entries(LS_OPTION_ALIAS_MAP).reduce(
+    (acc, [envName, optName]) => {
+      const value = env[envName as keyof LightstepEnv];
+      if (value && optName) acc[optName] = value;
+      return acc;
+    },
+    {} as Record<string, string>
+  );
 }
 
 /**
@@ -152,7 +118,7 @@ function validateConfiguration(config: Partial<LightstepNodeSDKConfiguration>) {
  * @param config
  */
 function validateToken(config: Partial<LightstepNodeSDKConfiguration>) {
-  if (!config.token && config.spanEndpoint === DEFAULTS.spanEndpoint) {
+  if (!config.token && config.spanEndpoint === LS_DEFAULTS.spanEndpoint) {
     fail(
       `Invalid configuration: access token missing, must be set when reporting to ${config.spanEndpoint}. Set LS_ACCESS_TOKEN env var or configure token in code`
     );
@@ -225,7 +191,7 @@ function createPropagator(name: PropagationFormat): HttpTextPropagator {
  */
 function configurePropagation(config: Partial<LightstepNodeSDKConfiguration>) {
   const propagators: Array<HttpTextPropagator> = (
-    config.propagators?.split(',') || ['b3']
+    config.propagators?.split(',') || [PROPAGATION_FORMATS.B3]
   ).map(name => createPropagator(name.trim() as PropagationFormat));
   if (propagators.length > 1) {
     config.httpTextPropagator = new CompositePropagator({ propagators });
