@@ -24,6 +24,25 @@ interface LightstepEnv {
   OTEL_PROPAGATORS?: string;
 }
 
+type PropagationFormat = 'b3' | 'tracecontext' | 'correlationcontext';
+
+const PROPAGATION_FORMATS: { [key: string]: PropagationFormat } = {
+  B3: 'b3',
+  TRACECONTEXT: 'tracecontext',
+  CORRELATIONCONTEXT: 'correlationcontext',
+};
+
+const PROPAGATOR_LOOKUP_MAP: {
+  [key: string]:
+    | typeof B3Propagator
+    | typeof HttpTraceContext
+    | typeof HttpCorrelationContext;
+} = {
+  b3: B3Propagator,
+  tracecontext: HttpTraceContext,
+  correlationcontext: HttpCorrelationContext,
+};
+
 const OPTION_ALIAS_MAP: {
   [K in keyof LightstepEnv]: keyof LightstepNodeSDKConfiguration;
 } = {
@@ -35,7 +54,7 @@ const OPTION_ALIAS_MAP: {
 
 const DEFAULTS: Partial<LightstepNodeSDKConfiguration> = {
   spanEndpoint: 'https://ingest.lightstep.com:443/api/v2/otel/trace',
-  propagators: 'b3',
+  propagators: PROPAGATION_FORMATS.B3,
 };
 
 let logger: Logger;
@@ -180,24 +199,13 @@ function configureTraceExporter(
   });
 }
 
-const PROPAGATOR_LOOKUP_MAP: {
-  [key: string]:
-    | typeof B3Propagator
-    | typeof HttpTraceContext
-    | typeof HttpCorrelationContext;
-} = {
-  b3: B3Propagator,
-  tracecontext: HttpTraceContext,
-  correlationcontext: HttpCorrelationContext,
-};
-
 /**
  * Instantiates a propagator based on a string name where the name appears in
  * as a key in the PROPAGATOR_LOOKUP_MAP. Current supported names are: b3,
  * tracecontext, correlationcontext.
  * @param name
  */
-function createPropagator(name: string): HttpTextPropagator {
+function createPropagator(name: PropagationFormat): HttpTextPropagator {
   const propagatorClass = PROPAGATOR_LOOKUP_MAP[name];
   if (!propagatorClass) {
     fail(
@@ -218,7 +226,7 @@ function createPropagator(name: string): HttpTextPropagator {
 function configurePropagation(config: Partial<LightstepNodeSDKConfiguration>) {
   const propagators: Array<HttpTextPropagator> = (
     config.propagators?.split(',') || ['b3']
-  ).map(name => createPropagator(name.trim()));
+  ).map(name => createPropagator(name.trim() as PropagationFormat));
   if (propagators.length > 1) {
     config.httpTextPropagator = new CompositePropagator({ propagators });
   } else {
