@@ -43,6 +43,7 @@ export const PROPAGATOR_LOOKUP_MAP: {
 export interface LightstepEnv {
   LS_ACCESS_TOKEN?: string;
   LS_SERVICE_NAME?: string;
+  LS_SERVICE_VERSION?: string;
   OTEL_EXPORTER_OTLP_SPAN_ENDPOINT?: string;
   OTEL_PROPAGATORS?: string;
 }
@@ -53,6 +54,7 @@ export const LS_OPTION_ALIAS_MAP: {
 } = {
   LS_ACCESS_TOKEN: 'token',
   LS_SERVICE_NAME: 'serviceName',
+  LS_SERVICE_VERSION: 'serviceVersion',
   OTEL_EXPORTER_OTLP_SPAN_ENDPOINT: 'spanEndpoint',
   OTEL_PROPAGATORS: 'propagators',
 };

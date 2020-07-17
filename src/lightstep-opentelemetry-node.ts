@@ -22,6 +22,11 @@ import {
 } from '@opentelemetry/exporter-collector';
 //@todo: this should be exported from core
 import { ENVIRONMENT } from '@opentelemetry/core/build/src/utils/environment';
+import {
+  Resource,
+  ResourceLabels,
+  SERVICE_RESOURCE,
+} from '@opentelemetry/resources';
 
 let logger: Logger;
 let fail: (message: string) => void;
@@ -40,6 +45,7 @@ export function configureOpenTelemetry(
 
   config = coalesceConfig(config);
   validateConfiguration(config);
+  configureBaseResource(config);
   configurePropagation(config);
   configureTraceExporter(config);
 
@@ -137,6 +143,19 @@ function validateServiceName(config: Partial<LightstepNodeSDKConfiguration>) {
     fail(
       'Invalid configuration: service name missing. Set LS_SERVICE_NAME env var or configure serviceName in code'
     );
+}
+
+function configureBaseResource(config: Partial<LightstepNodeSDKConfiguration>) {
+  const labels: ResourceLabels = {
+    [SERVICE_RESOURCE.NAME]: config.serviceName!,
+  };
+  if (config.serviceVersion)
+    labels[SERVICE_RESOURCE.VERSION] = config.serviceVersion;
+
+  const baseResource: Resource = new Resource(labels);
+
+  if (config.resource) config.resource = config.resource.merge(baseResource);
+  else config.resource = baseResource;
 }
 
 /**

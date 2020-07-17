@@ -7,6 +7,8 @@ import {
   CompositePropagator,
   HttpTraceContext,
 } from '@opentelemetry/core';
+import { SERVICE_RESOURCE } from '@opentelemetry/resources';
+import { NodeTracerProvider } from '../../../packages/opentelemetry-sdk-node/node_modules/@opentelemetry/node/build/src';
 
 describe('Lightstep OpenTelemetry Node', () => {
   describe('configureSDK', () => {
@@ -55,6 +57,18 @@ describe('Lightstep OpenTelemetry Node', () => {
         const sdk = lightstep.configureOpenTelemetry({ token });
         assert.ok(sdk instanceof NodeSDK);
       });
+
+      it('is added to the resource', () => {
+        const sdk = lightstep.configureOpenTelemetry({ token, serviceName });
+        assert.ok(sdk instanceof NodeSDK);
+        sdk.start();
+        assert.strictEqual(
+          (trace.getTracerProvider() as NodeTracerProvider).resource.labels[
+            SERVICE_RESOURCE.NAME
+          ],
+          serviceName
+        );
+      });
     });
 
     describe('access token', () => {
@@ -85,6 +99,25 @@ describe('Lightstep OpenTelemetry Node', () => {
         process.env.LS_ACCESS_TOKEN = token;
         const sdk = lightstep.configureOpenTelemetry({ serviceName });
         assert.ok(sdk instanceof NodeSDK);
+      });
+    });
+
+    describe('service version', () => {
+      it('is added to the resource', () => {
+        const serviceVersion = '0.0.1';
+        const sdk = lightstep.configureOpenTelemetry({
+          token,
+          serviceName,
+          serviceVersion,
+        });
+        assert.ok(sdk instanceof NodeSDK);
+        sdk.start();
+        assert.strictEqual(
+          (trace.getTracerProvider() as NodeTracerProvider).resource.labels[
+            SERVICE_RESOURCE.VERSION
+          ],
+          serviceVersion
+        );
       });
     });
 
