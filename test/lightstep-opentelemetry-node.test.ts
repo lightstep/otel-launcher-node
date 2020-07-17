@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { lightstep, LightstepConfigurationError } from '../src';
+import { lightstep, LightstepConfigurationError, LightstepEnv } from '../src';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { trace, metrics, context, propagation } from '@opentelemetry/api';
 import {
@@ -15,11 +15,11 @@ describe('Lightstep OpenTelemetry Node', () => {
     const token = 'x'.repeat(32);
     const serviceName = 'test-service';
     const minimalConfig = { token, serviceName };
+
     beforeEach(() => {
-      delete process.env.LS_ACCESS_TOKEN;
-      delete process.env.LS_SERVICE_NAME;
-      delete process.env.LS_SERVICE_VERSION;
-      delete process.env.OTEL_PROPAGATORS;
+      Object.keys(process.env as LightstepEnv).forEach(
+        k => delete process.env[k]
+      );
 
       trace.disable();
       metrics.disable();
