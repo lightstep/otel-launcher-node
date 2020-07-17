@@ -8,7 +8,7 @@ import {
   HttpTraceContext,
 } from '@opentelemetry/core';
 import { SERVICE_RESOURCE } from '@opentelemetry/resources';
-import { NodeTracerProvider } from '../../../packages/opentelemetry-sdk-node/node_modules/@opentelemetry/node/build/src';
+import { NodeTracerProvider } from '@opentelemetry/node';
 
 describe('Lightstep OpenTelemetry Node', () => {
   describe('configureSDK', () => {
