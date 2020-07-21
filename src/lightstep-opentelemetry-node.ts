@@ -71,7 +71,26 @@ function setupLogger(config: Partial<LightstepNodeSDKConfiguration>): Logger {
 function coalesceConfig(
   config: Partial<LightstepNodeSDKConfiguration>
 ): Partial<LightstepNodeSDKConfiguration> {
-  return Object.assign({}, LS_DEFAULTS, config, configFromEnvironment());
+  const envConfig: Partial<LightstepNodeSDKConfiguration> = configFromEnvironment();
+  const mergedConfig: Partial<LightstepNodeSDKConfiguration> = {
+    ...LS_DEFAULTS,
+    ...config,
+    ...envConfig,
+  };
+  logConfig(LS_DEFAULTS, config, envConfig, mergedConfig);
+  return mergedConfig;
+}
+
+function logConfig(
+  defaults: Partial<LightstepNodeSDKConfiguration>,
+  lsConfig: Partial<LightstepNodeSDKConfiguration>,
+  envConfig: Partial<LightstepNodeSDKConfiguration>,
+  mergedConfig: Partial<LightstepNodeSDKConfiguration>
+) {
+  logger.debug('Merged Config', mergedConfig);
+  logger.debug('Config from environment', envConfig);
+  logger.debug('Code from code: ', lsConfig);
+  logger.debug('Default config: ', defaults);
 }
 
 /**
