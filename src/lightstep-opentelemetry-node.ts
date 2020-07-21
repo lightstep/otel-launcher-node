@@ -2,7 +2,6 @@ import {
   ConsoleLogger,
   LogLevel,
   CompositePropagator,
-  getEnv,
 } from '@opentelemetry/core';
 import { HttpTextPropagator, Logger } from '@opentelemetry/api';
 import { NodeSDK } from '@opentelemetry/sdk-node';
@@ -20,8 +19,6 @@ import {
   CollectorTraceExporter,
   CollectorProtocolNode,
 } from '@opentelemetry/exporter-collector';
-//@todo: this should be exported from core
-import { ENVIRONMENT } from '@opentelemetry/core/build/src/utils/environment';
 import {
   Resource,
   ResourceLabels,
@@ -59,8 +56,16 @@ export function configureOpenTelemetry(
  */
 function setupLogger(config: Partial<LightstepNodeSDKConfiguration>): Logger {
   if (config.logger) return config.logger;
-  const otelEnv: ENVIRONMENT = getEnv();
-  return new ConsoleLogger(otelEnv.OTEL_LOG_LEVEL ?? LogLevel.INFO);
+
+  let logLevel: LogLevel = config.logLevel ?? LogLevel.INFO;
+
+  if (process.env.OTEL_LOG_LEVEL) {
+    logLevel =
+      LogLevel[
+        process.env.OTEL_LOG_LEVEL.toUpperCase() as keyof typeof LogLevel
+      ] ?? logLevel;
+  }
+  return new ConsoleLogger(logLevel);
 }
 
 /**
