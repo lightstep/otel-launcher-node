@@ -69,8 +69,8 @@ function setupLogger(config: Partial<LightstepNodeSDKConfiguration>): Logger {
 }
 
 /**
- * Merges configuration with the follow precedence: config from environment,
- * code level configuration, default configuration. Returns a new configuration.
+ * Merges configuration with the following precedence: code config, config from
+ * environment, default configuration. Returns a new configuration.
  * @param config
  */
 function coalesceConfig(
@@ -79,22 +79,22 @@ function coalesceConfig(
   const envConfig: Partial<LightstepNodeSDKConfiguration> = configFromEnvironment();
   const mergedConfig: Partial<LightstepNodeSDKConfiguration> = {
     ...LS_DEFAULTS,
-    ...config,
     ...envConfig,
+    ...config,
   };
-  logConfig(LS_DEFAULTS, config, envConfig, mergedConfig);
+  logConfig(LS_DEFAULTS, envConfig, config, mergedConfig);
   return mergedConfig;
 }
 
 function logConfig(
   defaults: Partial<LightstepNodeSDKConfiguration>,
-  lsConfig: Partial<LightstepNodeSDKConfiguration>,
   envConfig: Partial<LightstepNodeSDKConfiguration>,
+  lsConfig: Partial<LightstepNodeSDKConfiguration>,
   mergedConfig: Partial<LightstepNodeSDKConfiguration>
 ) {
   logger.debug('Merged Config', mergedConfig);
+  logger.debug('Config from code: ', lsConfig);
   logger.debug('Config from environment', envConfig);
-  logger.debug('Code from code: ', lsConfig);
   logger.debug('Default config: ', defaults);
 }
 
