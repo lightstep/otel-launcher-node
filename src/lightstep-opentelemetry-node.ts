@@ -2,19 +2,13 @@ import {
   ConsoleLogger,
   LogLevel,
   CompositePropagator,
+  B3Propagator,
+  HttpCorrelationContext,
+  HttpTraceContext,
 } from '@opentelemetry/core';
 import { HttpTextPropagator, Logger } from '@opentelemetry/api';
 import { NodeSDK } from '@opentelemetry/sdk-node';
-import {
-  LightstepConfigurationError,
-  LightstepNodeSDKConfiguration,
-  LightstepEnv,
-  LS_DEFAULTS,
-  LS_OPTION_ALIAS_MAP,
-  PropagationFormat,
-  PROPAGATION_FORMATS,
-  PROPAGATOR_LOOKUP_MAP,
-} from './types';
+import * as types from './types';
 import {
   CollectorTraceExporter,
   CollectorProtocolNode,
@@ -25,8 +19,32 @@ import {
   SERVICE_RESOURCE,
 } from '@opentelemetry/resources';
 
+const PROPAGATION_FORMATS: { [key: string]: types.PropagationFormat } = {
+  B3: 'b3',
+  TRACECONTEXT: 'tracecontext',
+  CORRELATIONCONTEXT: 'correlationcontext',
+};
+
+/** Map of propagation format to class implementing the format */
+const PROPAGATOR_LOOKUP_MAP: {
+  [key: string]:
+    | typeof B3Propagator
+    | typeof HttpTraceContext
+    | typeof HttpCorrelationContext;
+} = {
+  b3: B3Propagator,
+  tracecontext: HttpTraceContext,
+  correlationcontext: HttpCorrelationContext,
+};
+
+/** Default values for LightstepNodeSDKConfiguration */
+const LS_DEFAULTS: Partial<types.LightstepNodeSDKConfiguration> = {
+  spanEndpoint: 'https://ingest.lightstep.com:443/api/v2/otel/trace',
+  propagators: PROPAGATION_FORMATS.B3,
+};
+
 let logger: Logger;
-let fail: (message: string) => void;
+let fail: types.FailureHandler;
 
 /**
  * Returns a NodeSDK object configured using Lightstep defaults with user
@@ -35,7 +53,7 @@ let fail: (message: string) => void;
  * @param config
  */
 export function configureOpenTelemetry(
-  config: Partial<LightstepNodeSDKConfiguration> = {}
+  config: Partial<types.LightstepNodeSDKConfiguration> = {}
 ): NodeSDK {
   logger = setupLogger(config);
   fail = config.failureHandler || defaultFailureHandler(logger);
@@ -54,7 +72,9 @@ export function configureOpenTelemetry(
  * for OpenTelemetry. This is so we can print meaningful error messages when
  * configuration fails.
  */
-function setupLogger(config: Partial<LightstepNodeSDKConfiguration>): Logger {
+function setupLogger(
+  config: Partial<types.LightstepNodeSDKConfiguration>
+): Logger {
   if (config.logger) return config.logger;
 
   let logLevel: LogLevel = config.logLevel ?? LogLevel.INFO;
@@ -74,10 +94,10 @@ function setupLogger(config: Partial<LightstepNodeSDKConfiguration>): Logger {
  * @param config
  */
 function coalesceConfig(
-  config: Partial<LightstepNodeSDKConfiguration>
-): Partial<LightstepNodeSDKConfiguration> {
-  const envConfig: Partial<LightstepNodeSDKConfiguration> = configFromEnvironment();
-  const mergedConfig: Partial<LightstepNodeSDKConfiguration> = {
+  config: Partial<types.LightstepNodeSDKConfiguration>
+): Partial<types.LightstepNodeSDKConfiguration> {
+  const envConfig: Partial<types.LightstepNodeSDKConfiguration> = configFromEnvironment();
+  const mergedConfig: Partial<types.LightstepNodeSDKConfiguration> = {
     ...LS_DEFAULTS,
     ...envConfig,
     ...config,
@@ -87,10 +107,10 @@ function coalesceConfig(
 }
 
 function logConfig(
-  defaults: Partial<LightstepNodeSDKConfiguration>,
-  envConfig: Partial<LightstepNodeSDKConfiguration>,
-  lsConfig: Partial<LightstepNodeSDKConfiguration>,
-  mergedConfig: Partial<LightstepNodeSDKConfiguration>
+  defaults: Partial<types.LightstepNodeSDKConfiguration>,
+  envConfig: Partial<types.LightstepNodeSDKConfiguration>,
+  lsConfig: Partial<types.LightstepNodeSDKConfiguration>,
+  mergedConfig: Partial<types.LightstepNodeSDKConfiguration>
 ) {
   logger.debug('Merged Config', mergedConfig);
   logger.debug('Config from code: ', lsConfig);
@@ -102,15 +122,15 @@ function logConfig(
  * Iterates through known environment variable keys and returns an object with
  * keys using lightstep conventions
  */
-function configFromEnvironment(): Partial<LightstepNodeSDKConfiguration> {
-  const env: LightstepEnv = process.env as LightstepEnv;
-  return Object.entries(LS_OPTION_ALIAS_MAP).reduce(
+function configFromEnvironment(): Partial<types.LightstepNodeSDKConfiguration> {
+  const env = process.env as types.LightstepEnv;
+  return Object.entries(types.LS_OPTION_ALIAS_MAP).reduce(
     (acc, [envName, optName]) => {
-      const value = env[envName as keyof LightstepEnv];
+      const value = env[envName as keyof types.LightstepEnv];
       if (value && optName) acc[optName] = value;
       return acc;
     },
-    {} as Record<string, string>
+    {} as types.LightstepConfigType
   );
 }
 
@@ -120,10 +140,10 @@ function configFromEnvironment(): Partial<LightstepNodeSDKConfiguration> {
  * LightstepNodeSDKConfiguration
  * @param logger
  */
-function defaultFailureHandler(logger: Logger) {
+function defaultFailureHandler(logger: Logger): types.FailureHandler {
   return (message: string) => {
     logger.error(message);
-    throw new LightstepConfigurationError(message);
+    throw new types.LightstepConfigurationError(message);
   };
 }
 
@@ -131,7 +151,9 @@ function defaultFailureHandler(logger: Logger) {
  * Makes upfront validations on configuration issues known to cause failures.
  * @param config
  */
-function validateConfiguration(config: Partial<LightstepNodeSDKConfiguration>) {
+function validateConfiguration(
+  config: Partial<types.LightstepNodeSDKConfiguration>
+) {
   validateToken(config);
   validateServiceName(config);
 }
@@ -142,7 +164,7 @@ function validateConfiguration(config: Partial<LightstepNodeSDKConfiguration>) {
  * configuration. If a token is provided, we validate its length.
  * @param config
  */
-function validateToken(config: Partial<LightstepNodeSDKConfiguration>) {
+function validateToken(config: Partial<types.LightstepNodeSDKConfiguration>) {
   if (!config.token && config.spanEndpoint === LS_DEFAULTS.spanEndpoint) {
     fail(
       `Invalid configuration: access token missing, must be set when reporting to ${config.spanEndpoint}. Set LS_ACCESS_TOKEN env var or configure token in code`
@@ -162,14 +184,18 @@ function validateToken(config: Partial<LightstepNodeSDKConfiguration>) {
  * Validates that the service name is present
  * @param config
  */
-function validateServiceName(config: Partial<LightstepNodeSDKConfiguration>) {
+function validateServiceName(
+  config: Partial<types.LightstepNodeSDKConfiguration>
+) {
   if (!config.serviceName)
     fail(
       'Invalid configuration: service name missing. Set LS_SERVICE_NAME env var or configure serviceName in code'
     );
 }
 
-function configureBaseResource(config: Partial<LightstepNodeSDKConfiguration>) {
+function configureBaseResource(
+  config: Partial<types.LightstepNodeSDKConfiguration>
+) {
   const labels: ResourceLabels = {
     [SERVICE_RESOURCE.NAME]: config.serviceName!,
   };
@@ -188,7 +214,7 @@ function configureBaseResource(config: Partial<LightstepNodeSDKConfiguration>) {
  * @todo support more formats
  */
 function configureTraceExporter(
-  config: Partial<LightstepNodeSDKConfiguration>
+  config: Partial<types.LightstepNodeSDKConfiguration>
 ) {
   if (config.traceExporter) return;
 
@@ -209,7 +235,7 @@ function configureTraceExporter(
  * tracecontext, correlationcontext.
  * @param name
  */
-function createPropagator(name: PropagationFormat): HttpTextPropagator {
+function createPropagator(name: types.PropagationFormat): HttpTextPropagator {
   const propagatorClass = PROPAGATOR_LOOKUP_MAP[name];
   if (!propagatorClass) {
     fail(
@@ -227,10 +253,12 @@ function createPropagator(name: PropagationFormat): HttpTextPropagator {
  * tracecontext, and correlationcontext.
  * @param config
  */
-function configurePropagation(config: Partial<LightstepNodeSDKConfiguration>) {
+function configurePropagation(
+  config: Partial<types.LightstepNodeSDKConfiguration>
+) {
   const propagators: Array<HttpTextPropagator> = (
     config.propagators?.split(',') || [PROPAGATION_FORMATS.B3]
-  ).map(name => createPropagator(name.trim() as PropagationFormat));
+  ).map(name => createPropagator(name.trim() as types.PropagationFormat));
   if (propagators.length > 1) {
     config.httpTextPropagator = new CompositePropagator({ propagators });
   } else {
