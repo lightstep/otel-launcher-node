@@ -58,10 +58,10 @@ describe('Lightstep OpenTelemetry Node', () => {
         assert.ok(sdk instanceof NodeSDK);
       });
 
-      it('is added to the resource', () => {
+      it('is added to the resource', async () => {
         const sdk = lightstep.configureOpenTelemetry({ token, serviceName });
         assert.ok(sdk instanceof NodeSDK);
-        sdk.start();
+        await sdk.start();
         assert.strictEqual(
           (trace.getTracerProvider() as NodeTracerProvider).resource.labels[
             SERVICE_RESOURCE.NAME
@@ -102,8 +102,8 @@ describe('Lightstep OpenTelemetry Node', () => {
       });
     });
 
-    describe('service version', () => {
-      it('is added to the resource', () => {
+    describe('service version', async () => {
+      it('is added to the resource', async () => {
         const serviceVersion = '0.0.1';
         const sdk = lightstep.configureOpenTelemetry({
           token,
@@ -111,7 +111,9 @@ describe('Lightstep OpenTelemetry Node', () => {
           serviceVersion,
         });
         assert.ok(sdk instanceof NodeSDK);
-        sdk.start();
+
+        await sdk.start();
+
         assert.strictEqual(
           (trace.getTracerProvider() as NodeTracerProvider).resource.labels[
             SERVICE_RESOURCE.VERSION
@@ -122,25 +124,23 @@ describe('Lightstep OpenTelemetry Node', () => {
     });
 
     describe('propagation', () => {
-      it('defaults to b3', () => {
+      it('defaults to b3', async () => {
         const sdk = lightstep.configureOpenTelemetry(minimalConfig);
 
-        sdk.start();
-
+        await sdk.start();
         assert.ok(
           propagation['_getGlobalPropagator']() instanceof B3Propagator
         );
       });
 
-      it('can be assigned using a comma delimited string', () => {
+      it('can be assigned using a comma delimited string', async () => {
         const sdk = lightstep.configureOpenTelemetry({
           token,
           serviceName,
           propagators: 'b3,tracecontext',
         });
 
-        sdk.start();
-
+        await sdk.start();
         const propagator = propagation['_getGlobalPropagator']();
         assert.ok(propagator instanceof CompositePropagator);
 
@@ -149,12 +149,11 @@ describe('Lightstep OpenTelemetry Node', () => {
         assert.ok(tc instanceof HttpTraceContext);
       });
 
-      it('can be assigned using a comma delimited string from environment', () => {
+      it('can be assigned using a comma delimited string from environment', async () => {
         process.env.OTEL_PROPAGATORS = 'b3,tracecontext';
         const sdk = lightstep.configureOpenTelemetry(minimalConfig);
 
-        sdk.start();
-
+        await sdk.start();
         const propagator = propagation['_getGlobalPropagator']();
         assert.ok(propagator instanceof CompositePropagator);
 
@@ -163,16 +162,16 @@ describe('Lightstep OpenTelemetry Node', () => {
         assert.ok(tc instanceof HttpTraceContext);
       });
 
-      it('raises exception for unknown propagator string', () => {
-        assert.throws(
-          () => {
+      it('raises exception for unknown propagator string', async () => {
+        await assert.rejects(
+          async () => {
             const sdk = lightstep.configureOpenTelemetry({
               token,
               serviceName,
               propagators: 'b3,foo',
             });
 
-            sdk.start();
+            await sdk.start();
           },
           err => {
             assert(err instanceof LightstepConfigurationError);
