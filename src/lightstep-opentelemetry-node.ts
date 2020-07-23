@@ -43,6 +43,8 @@ const LS_DEFAULTS: Partial<types.LightstepNodeSDKConfiguration> = {
   propagators: PROPAGATION_FORMATS.B3,
 };
 
+const ACCESS_TOKEN_HEADER = 'Lightstep-Access-Token';
+
 let logger: Logger;
 let fail: types.FailureHandler;
 
@@ -165,15 +167,15 @@ function validateConfiguration(
  * @param config
  */
 function validateToken(config: Partial<types.LightstepNodeSDKConfiguration>) {
-  if (!config.token && config.spanEndpoint === LS_DEFAULTS.spanEndpoint) {
+  if (!config.accessToken && config.spanEndpoint === LS_DEFAULTS.spanEndpoint) {
     fail(
       `Invalid configuration: access token missing, must be set when reporting to ${config.spanEndpoint}. Set LS_ACCESS_TOKEN env var or configure token in code`
     );
   }
 
-  if (!config.token) return;
+  if (!config.accessToken) return;
 
-  if (![32, 84, 104].includes(config.token.length)) {
+  if (![32, 84, 104].includes(config.accessToken.length)) {
     fail(
       `Invalid configuration: access token length incorrect. Ensure token is set correctly`
     );
@@ -219,7 +221,7 @@ function configureTraceExporter(
   if (config.traceExporter) return;
 
   const headers: { [key: string]: string } = {};
-  if (config.token) headers['lightstep-access-token'] = config.token;
+  if (config.accessToken) headers[ACCESS_TOKEN_HEADER] = config.accessToken;
 
   config.traceExporter = new CollectorTraceExporter({
     protocolNode: CollectorProtocolNode.HTTP_JSON,

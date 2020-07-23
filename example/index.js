@@ -1,10 +1,10 @@
 const { lightstep, opentelemetry } = require('../build/src/index');
 
 // set access token or use LS_ACCESS_TOKEN environment variable
-const token = 'YOUR ACCESS TOKEN';
+const accessToken = 'YOUR ACCESS TOKEN';
 
 const sdk = lightstep.configureOpenTelemetry({
-  token,
+  accessToken,
   serviceName: 'locl-ex',
 });
 

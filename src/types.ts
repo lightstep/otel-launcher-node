@@ -2,7 +2,7 @@ import { NodeSDKConfiguration } from '@opentelemetry/sdk-node';
 
 /** Mapping of environment variable names to LightstepNodeSDKConfiguration names */
 export enum LS_OPTION_ALIAS_MAP {
-  LS_ACCESS_TOKEN = 'token',
+  LS_ACCESS_TOKEN = 'accessToken',
   LS_SERVICE_NAME = 'serviceName',
   LS_SERVICE_VERSION = 'serviceVersion',
   OTEL_EXPORTER_OTLP_SPAN_ENDPOINT = 'spanEndpoint',

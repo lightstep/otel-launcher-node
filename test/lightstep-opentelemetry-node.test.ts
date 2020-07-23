@@ -12,9 +12,9 @@ import { NodeTracerProvider } from '@opentelemetry/node';
 
 describe('Lightstep OpenTelemetry Node', () => {
   describe('configureSDK', () => {
-    const token = 'x'.repeat(32);
+    const accessToken = 'x'.repeat(32);
     const serviceName = 'test-service';
-    const minimalConfig = { token, serviceName };
+    const minimalConfig = { accessToken, serviceName };
 
     beforeEach(() => {
       Object.keys(process.env as LightstepEnv).forEach(
@@ -30,7 +30,7 @@ describe('Lightstep OpenTelemetry Node', () => {
     describe('minimal configuration', () => {
       it('should require access token and serviceName', () => {
         const sdk = lightstep.configureOpenTelemetry({
-          token,
+          accessToken,
           serviceName,
         });
         assert.ok(sdk instanceof NodeSDK);
@@ -40,7 +40,7 @@ describe('Lightstep OpenTelemetry Node', () => {
     describe('service name', () => {
       it('is required', () => {
         assert.throws(
-          () => lightstep.configureOpenTelemetry({ token }),
+          () => lightstep.configureOpenTelemetry({ accessToken }),
           err => {
             assert(err instanceof LightstepConfigurationError);
             assert.match(
@@ -54,12 +54,15 @@ describe('Lightstep OpenTelemetry Node', () => {
 
       it('should be settable by environment', () => {
         process.env.LS_SERVICE_NAME = 'test-service';
-        const sdk = lightstep.configureOpenTelemetry({ token });
+        const sdk = lightstep.configureOpenTelemetry({ accessToken });
         assert.ok(sdk instanceof NodeSDK);
       });
 
       it('is added to the resource', async () => {
-        const sdk = lightstep.configureOpenTelemetry({ token, serviceName });
+        const sdk = lightstep.configureOpenTelemetry({
+          accessToken,
+          serviceName,
+        });
         assert.ok(sdk instanceof NodeSDK);
         await sdk.start();
         assert.strictEqual(
@@ -96,7 +99,7 @@ describe('Lightstep OpenTelemetry Node', () => {
       });
 
       it('should be settable by environment', () => {
-        process.env.LS_ACCESS_TOKEN = token;
+        process.env.LS_ACCESS_TOKEN = accessToken;
         const sdk = lightstep.configureOpenTelemetry({ serviceName });
         assert.ok(sdk instanceof NodeSDK);
       });
@@ -106,7 +109,7 @@ describe('Lightstep OpenTelemetry Node', () => {
       it('is added to the resource', async () => {
         const serviceVersion = '0.0.1';
         const sdk = lightstep.configureOpenTelemetry({
-          token,
+          accessToken,
           serviceName,
           serviceVersion,
         });
@@ -135,7 +138,7 @@ describe('Lightstep OpenTelemetry Node', () => {
 
       it('can be assigned using a comma delimited string', async () => {
         const sdk = lightstep.configureOpenTelemetry({
-          token,
+          accessToken,
           serviceName,
           propagators: 'b3,tracecontext',
         });
@@ -166,7 +169,7 @@ describe('Lightstep OpenTelemetry Node', () => {
         await assert.rejects(
           async () => {
             const sdk = lightstep.configureOpenTelemetry({
-              token,
+              accessToken,
               serviceName,
               propagators: 'b3,foo',
             });
