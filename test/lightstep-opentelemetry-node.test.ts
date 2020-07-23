@@ -186,6 +186,17 @@ describe('Lightstep OpenTelemetry Node', () => {
           }
         );
       });
+
+      it('does not override user provided propagator', async () => {
+        const propagator = new HttpTraceContext();
+        const sdk = lightstep.configureOpenTelemetry({
+          ...minimalConfig,
+          httpTextPropagator: propagator,
+        });
+
+        await sdk.start();
+        assert.deepEqual(propagation['_getGlobalPropagator'](), propagator);
+      });
     });
   });
 });

@@ -258,6 +258,8 @@ function createPropagator(name: types.PropagationFormat): HttpTextPropagator {
 function configurePropagation(
   config: Partial<types.LightstepNodeSDKConfiguration>
 ) {
+  if (config.httpTextPropagator) return;
+
   const propagators: Array<HttpTextPropagator> = (
     config.propagators?.split(',') || [PROPAGATION_FORMATS.B3]
   ).map(name => createPropagator(name.trim() as types.PropagationFormat));
