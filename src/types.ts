@@ -6,6 +6,7 @@ export enum LS_OPTION_ALIAS_MAP {
   LS_SERVICE_NAME = 'serviceName',
   LS_SERVICE_VERSION = 'serviceVersion',
   OTEL_EXPORTER_OTLP_SPAN_ENDPOINT = 'spanEndpoint',
+  OTEL_EXPORTER_OTLP_METRIC_ENDPOINT = 'metricEndpoint',
   OTEL_PROPAGATORS = 'propagators',
 }
 

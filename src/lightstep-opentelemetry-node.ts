@@ -40,6 +40,7 @@ const PROPAGATOR_LOOKUP_MAP: {
 /** Default values for LightstepNodeSDKConfiguration */
 const LS_DEFAULTS: Partial<types.LightstepNodeSDKConfiguration> = {
   spanEndpoint: 'https://ingest.lightstep.com:443/api/v2/otel/trace',
+  metricEndpoint: 'https://ingest.lightstep.com:443/metrics',
   propagators: PROPAGATION_FORMATS.B3,
 };
 
