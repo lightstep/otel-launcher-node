@@ -87,7 +87,14 @@ function setupLogger(
         process.env.OTEL_LOG_LEVEL.toUpperCase() as keyof typeof LogLevel
       ] ?? logLevel;
   }
-  return new ConsoleLogger(logLevel);
+
+  const logger = new ConsoleLogger(logLevel);
+
+  if (logLevel == LogLevel.DEBUG && !config.logger) {
+    config.logger = logger;
+  }
+
+  return logger;
 }
 
 /**
@@ -228,6 +235,7 @@ function configureTraceExporter(
     serviceName: config.serviceName,
     url: config.spanEndpoint,
     headers,
+    logger,
   });
 }
 
