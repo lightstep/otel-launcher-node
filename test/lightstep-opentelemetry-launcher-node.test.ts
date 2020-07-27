@@ -10,7 +10,7 @@ import {
 import { SERVICE_RESOURCE } from '@opentelemetry/resources';
 import { NodeTracerProvider } from '@opentelemetry/node';
 
-describe('Lightstep OpenTelemetry Node', () => {
+describe('Lightstep OpenTelemetry Launcher Node', () => {
   describe('configureSDK', () => {
     const accessToken = 'x'.repeat(32);
     const serviceName = 'test-service';
