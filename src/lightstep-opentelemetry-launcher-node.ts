@@ -116,16 +116,19 @@ function coalesceConfig(
   return mergedConfig;
 }
 
+/**
+ * Log configuration from individual sources and the effective, merged config
+ */
 function logConfig(
   defaults: Partial<types.LightstepNodeSDKConfiguration>,
   envConfig: Partial<types.LightstepNodeSDKConfiguration>,
   lsConfig: Partial<types.LightstepNodeSDKConfiguration>,
   mergedConfig: Partial<types.LightstepNodeSDKConfiguration>
 ) {
-  logger.debug('Merged Config', mergedConfig);
-  logger.debug('Config from code: ', lsConfig);
-  logger.debug('Config from environment', envConfig);
   logger.debug('Default config: ', defaults);
+  logger.debug('Config from environment', envConfig);
+  logger.debug('Config from code: ', lsConfig);
+  logger.debug('Merged Config', mergedConfig);
 }
 
 /**
