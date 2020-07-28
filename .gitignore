@@ -3,6 +3,5 @@ package-lock.json
 node_modules/
 .idea
 *.iml
-build
 .nyc_output
 coverage
