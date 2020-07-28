@@ -93,7 +93,7 @@ function setupLogger(
 
   const logger = new ConsoleLogger(logLevel);
 
-  if (logLevel == LogLevel.DEBUG && !config.logger) {
+  if (logLevel === LogLevel.DEBUG && !config.logger) {
     config.logger = logger;
   }
 
