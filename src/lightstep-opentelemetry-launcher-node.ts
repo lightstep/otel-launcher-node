@@ -78,7 +78,9 @@ export function configureOpenTelemetry(
 function setupLogger(
   config: Partial<types.LightstepNodeSDKConfiguration>
 ): Logger {
-  if (config.logger) return config.logger;
+  if (config.logger) {
+    return config.logger;
+  }
 
   let logLevel: LogLevel = config.logLevel ?? LogLevel.INFO;
 
@@ -140,7 +142,9 @@ function configFromEnvironment(): Partial<types.LightstepNodeSDKConfiguration> {
   return Object.entries(types.LS_OPTION_ALIAS_MAP).reduce(
     (acc, [envName, optName]) => {
       const value = env[envName as keyof types.LightstepEnv];
-      if (value && optName) acc[optName] = value;
+      if (value && optName) {
+        acc[optName] = value;
+      }
       return acc;
     },
     {} as types.LightstepConfigType
@@ -184,7 +188,9 @@ function validateToken(config: Partial<types.LightstepNodeSDKConfiguration>) {
     );
   }
 
-  if (!config.accessToken) return;
+  if (!config.accessToken) {
+    return;
+  }
 
   if (![32, 84, 104].includes(config.accessToken.length)) {
     fail(
@@ -212,13 +218,17 @@ function configureBaseResource(
   const labels: ResourceLabels = {
     [SERVICE_RESOURCE.NAME]: config.serviceName!,
   };
-  if (config.serviceVersion)
+  if (config.serviceVersion) {
     labels[SERVICE_RESOURCE.VERSION] = config.serviceVersion;
+  }
 
   const baseResource: Resource = new Resource(labels);
 
-  if (config.resource) config.resource = config.resource.merge(baseResource);
-  else config.resource = baseResource;
+  if (config.resource) {
+    config.resource = config.resource.merge(baseResource);
+  } else {
+    config.resource = baseResource;
+  }
 }
 
 /**
@@ -229,10 +239,14 @@ function configureBaseResource(
 function configureTraceExporter(
   config: Partial<types.LightstepNodeSDKConfiguration>
 ) {
-  if (config.traceExporter) return;
+  if (config.traceExporter) {
+    return;
+  }
 
   const headers: { [key: string]: string } = {};
-  if (config.accessToken) headers[ACCESS_TOKEN_HEADER] = config.accessToken;
+  if (config.accessToken) {
+    headers[ACCESS_TOKEN_HEADER] = config.accessToken;
+  }
 
   config.traceExporter = new CollectorTraceExporter({
     protocolNode: CollectorProtocolNode.HTTP_JSON,
@@ -270,7 +284,9 @@ function createPropagator(name: types.PropagationFormat): HttpTextPropagator {
 function configurePropagation(
   config: Partial<types.LightstepNodeSDKConfiguration>
 ) {
-  if (config.httpTextPropagator) return;
+  if (config.httpTextPropagator) {
+    return;
+  }
 
   const propagators: Array<HttpTextPropagator> = (
     config.propagators?.split(',') || [PROPAGATION_FORMATS.B3]
