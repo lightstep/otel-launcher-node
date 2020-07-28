@@ -10,7 +10,7 @@ import {
 import { SERVICE_RESOURCE } from '@opentelemetry/resources';
 import { NodeTracerProvider } from '@opentelemetry/node';
 
-describe('Lightstep OpenTelemetry Node', () => {
+describe('Lightstep OpenTelemetry Launcher Node', () => {
   describe('configureSDK', () => {
     const accessToken = 'x'.repeat(32);
     const serviceName = 'test-service';
@@ -166,6 +166,7 @@ describe('Lightstep OpenTelemetry Node', () => {
       });
 
       it('raises exception for unknown propagator string', async () => {
+        // eslint-disable-next-line
         await assert.rejects(
           async () => {
             const sdk = lightstep.configureOpenTelemetry({
@@ -185,6 +186,17 @@ describe('Lightstep OpenTelemetry Node', () => {
             return true;
           }
         );
+      });
+
+      it('does not override user provided propagator', async () => {
+        const propagator = new HttpTraceContext();
+        const sdk = lightstep.configureOpenTelemetry({
+          ...minimalConfig,
+          httpTextPropagator: propagator,
+        });
+
+        await sdk.start();
+        assert.deepEqual(propagation['_getGlobalPropagator'](), propagator);
       });
     });
   });

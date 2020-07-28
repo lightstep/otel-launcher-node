@@ -1,10 +1,10 @@
 {
-  "name": "lightstep-opentelemetry-node",
-  "version": "0.0.0",
-  "description": "Lightstep configuration layer OpenTelemetry Node.js",
+  "name": "lightstep-opentelemetry-launcher-node",
+  "version": "0.10.0",
+  "description": "Lightstep Launcher - a configuration layer OpenTelemetry Node.js",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
-  "repository": "lightstep/opentelemetry-node-js",
+  "repository": "lightstep/otel-launcher-node",
   "scripts": {
     "test": "nyc ts-mocha -p tsconfig.json test/**/*.test.ts",
     "codecov": "nyc report --reporter=json && codecov -f coverage/*.json -p ../../",
@@ -43,17 +43,21 @@
     "access": "public"
   },
   "dependencies": {
-    "@opentelemetry/api": "^0.9.0",
-    "@opentelemetry/core": "^0.9.0",
-    "@opentelemetry/exporter-collector": "^0.9.0",
-    "@opentelemetry/node": "^0.9.0",
-    "@opentelemetry/resources": "^0.9.0",
-    "@opentelemetry/sdk-node": "^0.9.0"
+    "@opentelemetry/api": "^0.10.0",
+    "@opentelemetry/core": "^0.10.0",
+    "@opentelemetry/exporter-collector": "^0.10.0",
+    "@opentelemetry/node": "^0.10.0",
+    "@opentelemetry/resources": "^0.10.0",
+    "@opentelemetry/sdk-node": "^0.10.0"
   },
   "devDependencies": {
     "@types/mocha": "7.0.2",
     "@types/node": "14.0.13",
     "codecov": "3.7.0",
+    "eslint": "7.5.0",
+    "eslint-config-airbnb-base": "14.2.0",
+    "eslint-plugin-header": "3.0.0",
+    "eslint-plugin-import": "2.22.0",
     "gts": "2.0.2",
     "mocha": "7.2.0",
     "nyc": "15.1.0",

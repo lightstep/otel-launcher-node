@@ -40,6 +40,7 @@ const PROPAGATOR_LOOKUP_MAP: {
 /** Default values for LightstepNodeSDKConfiguration */
 const LS_DEFAULTS: Partial<types.LightstepNodeSDKConfiguration> = {
   spanEndpoint: 'https://ingest.lightstep.com:443/api/v2/otel/trace',
+  metricEndpoint: 'https://ingest.lightstep.com:443/metrics',
   propagators: PROPAGATION_FORMATS.B3,
 };
 
@@ -77,7 +78,9 @@ export function configureOpenTelemetry(
 function setupLogger(
   config: Partial<types.LightstepNodeSDKConfiguration>
 ): Logger {
-  if (config.logger) return config.logger;
+  if (config.logger) {
+    return config.logger;
+  }
 
   let logLevel: LogLevel = config.logLevel ?? LogLevel.INFO;
 
@@ -87,7 +90,14 @@ function setupLogger(
         process.env.OTEL_LOG_LEVEL.toUpperCase() as keyof typeof LogLevel
       ] ?? logLevel;
   }
-  return new ConsoleLogger(logLevel);
+
+  const logger = new ConsoleLogger(logLevel);
+
+  if (logLevel === LogLevel.DEBUG && !config.logger) {
+    config.logger = logger;
+  }
+
+  return logger;
 }
 
 /**
@@ -108,16 +118,19 @@ function coalesceConfig(
   return mergedConfig;
 }
 
+/**
+ * Log configuration from individual sources and the effective, merged config
+ */
 function logConfig(
   defaults: Partial<types.LightstepNodeSDKConfiguration>,
   envConfig: Partial<types.LightstepNodeSDKConfiguration>,
   lsConfig: Partial<types.LightstepNodeSDKConfiguration>,
   mergedConfig: Partial<types.LightstepNodeSDKConfiguration>
 ) {
-  logger.debug('Merged Config', mergedConfig);
-  logger.debug('Config from code: ', lsConfig);
-  logger.debug('Config from environment', envConfig);
   logger.debug('Default config: ', defaults);
+  logger.debug('Config from environment', envConfig);
+  logger.debug('Config from code: ', lsConfig);
+  logger.debug('Merged Config', mergedConfig);
 }
 
 /**
@@ -129,7 +142,9 @@ function configFromEnvironment(): Partial<types.LightstepNodeSDKConfiguration> {
   return Object.entries(types.LS_OPTION_ALIAS_MAP).reduce(
     (acc, [envName, optName]) => {
       const value = env[envName as keyof types.LightstepEnv];
-      if (value && optName) acc[optName] = value;
+      if (value && optName) {
+        acc[optName] = value;
+      }
       return acc;
     },
     {} as types.LightstepConfigType
@@ -173,11 +188,13 @@ function validateToken(config: Partial<types.LightstepNodeSDKConfiguration>) {
     );
   }
 
-  if (!config.accessToken) return;
-
+  if (!config.accessToken) {
+    return;
+  }
+  // valid access tokens are 32, 84 or 104 characters
   if (![32, 84, 104].includes(config.accessToken.length)) {
     fail(
-      `Invalid configuration: access token length incorrect. Ensure token is set correctly`
+      'Invalid configuration: access token length incorrect. Ensure token is set correctly'
     );
   }
 }
@@ -201,13 +218,17 @@ function configureBaseResource(
   const labels: ResourceLabels = {
     [SERVICE_RESOURCE.NAME]: config.serviceName!,
   };
-  if (config.serviceVersion)
+  if (config.serviceVersion) {
     labels[SERVICE_RESOURCE.VERSION] = config.serviceVersion;
+  }
 
   const baseResource: Resource = new Resource(labels);
 
-  if (config.resource) config.resource = config.resource.merge(baseResource);
-  else config.resource = baseResource;
+  if (config.resource) {
+    config.resource = config.resource.merge(baseResource);
+  } else {
+    config.resource = baseResource;
+  }
 }
 
 /**
@@ -218,16 +239,21 @@ function configureBaseResource(
 function configureTraceExporter(
   config: Partial<types.LightstepNodeSDKConfiguration>
 ) {
-  if (config.traceExporter) return;
+  if (config.traceExporter) {
+    return;
+  }
 
   const headers: { [key: string]: string } = {};
-  if (config.accessToken) headers[ACCESS_TOKEN_HEADER] = config.accessToken;
+  if (config.accessToken) {
+    headers[ACCESS_TOKEN_HEADER] = config.accessToken;
+  }
 
   config.traceExporter = new CollectorTraceExporter({
     protocolNode: CollectorProtocolNode.HTTP_JSON,
     serviceName: config.serviceName,
     url: config.spanEndpoint,
     headers,
+    logger,
   });
 }
 
@@ -258,6 +284,10 @@ function createPropagator(name: types.PropagationFormat): HttpTextPropagator {
 function configurePropagation(
   config: Partial<types.LightstepNodeSDKConfiguration>
 ) {
+  if (config.httpTextPropagator) {
+    return;
+  }
+
   const propagators: Array<HttpTextPropagator> = (
     config.propagators?.split(',') || [PROPAGATION_FORMATS.B3]
   ).map(name => createPropagator(name.trim() as types.PropagationFormat));
