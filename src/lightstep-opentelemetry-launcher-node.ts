@@ -191,7 +191,7 @@ function validateToken(config: Partial<types.LightstepNodeSDKConfiguration>) {
   if (!config.accessToken) {
     return;
   }
-
+  // valid access tokens are 32, 84 or 104 characters
   if (![32, 84, 104].includes(config.accessToken.length)) {
     fail(
       'Invalid configuration: access token length incorrect. Ensure token is set correctly'
