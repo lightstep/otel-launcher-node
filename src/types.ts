@@ -18,7 +18,7 @@ export type LightstepConfigType = Record<LS_OPTION_ALIAS_MAP, string>;
 export type FailureHandler = (message: string) => void;
 
 /** Lightstep environment variable names */
-export interface LightstepEnv extends Partial<LightstepEnvType> {}
+export type LightstepEnv = Partial<LightstepEnvType>;
 
 /** Lightstep flavored configuration for the OpenTelemetry JS SDK */
 export interface LightstepNodeSDKConfiguration

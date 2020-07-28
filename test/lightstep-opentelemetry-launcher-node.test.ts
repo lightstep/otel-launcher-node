@@ -166,6 +166,7 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
       });
 
       it('raises exception for unknown propagator string', async () => {
+        // eslint-disable-next-line
         await assert.rejects(
           async () => {
             const sdk = lightstep.configureOpenTelemetry({

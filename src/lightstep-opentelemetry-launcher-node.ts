@@ -188,7 +188,7 @@ function validateToken(config: Partial<types.LightstepNodeSDKConfiguration>) {
 
   if (![32, 84, 104].includes(config.accessToken.length)) {
     fail(
-      `Invalid configuration: access token length incorrect. Ensure token is set correctly`
+      'Invalid configuration: access token length incorrect. Ensure token is set correctly'
     );
   }
 }
