@@ -12,6 +12,8 @@
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "precompile": "tsc --version",
+    "release": "./scripts/release.sh",
+    "release:prepare": "./scripts/release-prepare.sh",
     "version:update": "node ./scripts/version-update.js",
     "compile": "npm run version:update && tsc -p .",
     "prepare": "npm run compile",
@@ -61,6 +63,7 @@
     "gts": "2.0.2",
     "mocha": "7.2.0",
     "nyc": "15.1.0",
+    "package-json": "^6.5.0",
     "ts-mocha": "7.0.0",
     "typescript": "3.9.5"
   }
