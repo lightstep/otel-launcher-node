@@ -4,7 +4,7 @@ const { lightstep, opentelemetry } = require('../build/src/index');
 const accessToken = 'YOUR ACCESS TOKEN';
 
 const sdk = lightstep.configureOpenTelemetry({
-  accessToken,
+  //accessToken,
   serviceName: 'locl-ex',
 });
 

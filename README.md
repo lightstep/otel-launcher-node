@@ -8,8 +8,23 @@ Launcher is a configuration layer that chooses default values for configuration 
 
 ### Getting started
 
+For the bug bash use the client and server apps in the [examples directory](example). The examples
+should run as-is, but you'll need to configure open telemetry. See [configure](#configure) and remember `OTEL_LOG_LEVEL=debug` is your friend.
+
+start the server
+
 ```bash
-npm i lightstep-opentelemetry-launcher-node
+cd server
+npm i
+node server.js
+```
+
+start the client
+
+```bash
+cd client
+npm i
+node client.js
 ```
 
 ### Configure
