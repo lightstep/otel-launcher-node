@@ -17,7 +17,7 @@ upstreamExists=`git remote -v | grep upstream_tmp_release | tail -1`
 if [ "$upstreamExists" != "" ]; then
   git remote remove upstream_tmp_release
 fi
-git remote add upstream_tmp_release git@github.com:lightstep/opentelemetry-exporter-js.git
+git remote add upstream_tmp_release git@github.com:lightstep/otel-launcher-node.git
 
 git push --set-upstream upstream_tmp_release master
 git push upstream_tmp_release "v$checkNpm"
