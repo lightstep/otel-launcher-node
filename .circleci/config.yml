@@ -33,6 +33,9 @@ jobs:
       - run:
           name: Run tests
           command: npm run test
+      - run:
+          name: Report coverage
+          command: npm run codecov
   deploy:
     <<: *defaults
     steps:
