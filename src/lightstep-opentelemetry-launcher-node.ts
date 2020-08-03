@@ -71,9 +71,11 @@ export function configureOpenTelemetry(
 }
 
 /**
- * Setup up logger to use for LOCL. This may or may not be the logger configured
- * for OpenTelemetry. This is so we can print meaningful error messages when
- * configuration fails.
+ * Setup up logger to use for Launcher. This may or may not be the logger
+ * configured for OpenTelemetry. This is so we can print meaningful error
+ * messages when configuration fails. Note, when provided by environment variable,
+ * log level is interpreted as a string. In code configuration uses the LogLevel
+ * enum from @openelemetry/core
  */
 function setupLogger(
   config: Partial<types.LightstepNodeSDKConfiguration>
@@ -82,13 +84,17 @@ function setupLogger(
     return config.logger;
   }
 
-  let logLevel: LogLevel = config.logLevel ?? LogLevel.INFO;
+  let logLevel: LogLevel;
 
-  if (process.env.OTEL_LOG_LEVEL) {
+  if (config.logLevel !== undefined) {
+    logLevel = config.logLevel;
+  } else if (process.env.OTEL_LOG_LEVEL) {
     logLevel =
       LogLevel[
         process.env.OTEL_LOG_LEVEL.toUpperCase() as keyof typeof LogLevel
-      ] ?? logLevel;
+      ];
+  } else {
+    logLevel = LogLevel.INFO;
   }
 
   const logger = new ConsoleLogger(logLevel);

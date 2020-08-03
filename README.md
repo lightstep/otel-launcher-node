@@ -36,8 +36,6 @@ sdk.start().then(() => {
 });
 ```
 
-Additional options
-
 ### Configuration Options
 
 | Config Option  | Env Variable                       | Required | Default                                            |
@@ -50,6 +48,12 @@ Additional options
 | logLevel       | OTEL_LOG_LEVEL                     | n        | info                                               |
 | propagators    | OTEL_PROPAGATORS                   | n        | b3                                                 |
 | resource       | OTEL_RESOURCE_LABELS               | n        | -                                                  |
+
+#### Additional Options
+
+In addition the options below, the `configureOpenTelemetry` function will take any configuration
+options supported by the OpenTelemetry Node SDK package and its return value is a NodeSDK instance.
+See the [OpenTelemetry Node SDK documentation](https://github.com/open-telemetry/opentelemetry-js/tree/master/packages/opentelemetry-sdk-node) for more details.
 
 ### Principles behind Launcher
 
