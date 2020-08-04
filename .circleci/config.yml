@@ -57,29 +57,29 @@ workflows:
       - checkout:
           filters:
             branches:
-              ignore:
-                - master
+              only: /.*/
       - lint_test:
-          requires:
-            - checkout
           filters:
             branches:
-              ignore:
-                - master
-  deploy:
+              only: /.*/
+          requires:
+            - checkout
+  release:
     jobs:
       - checkout:
           filters:
+            tags:
+              only: /^v.*/
             branches:
-              only:
-                - master
+              ignore: /.*/
       - lint_test:
           requires:
             - checkout
           filters:
+            tags:
+              only: /^v.*/
             branches:
-              only:
-                - master
+              ignore: /.*/
       - deploy:
           requires:
             - lint_test
@@ -87,5 +87,4 @@ workflows:
             tags:
               only: /^v.*/
             branches:
-              only:
-                - master
+              ignore: /.*/
