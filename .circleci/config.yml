@@ -3,7 +3,7 @@ version: 2.1
 defaults: &defaults
   working_directory: ~/repo
   docker:
-    - image: node:12
+    - image: circleci/node:14.5.0
 
 jobs:
   checkout:
@@ -12,16 +12,17 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "package.json" }}
-            - v1-dependencies-
+            - v2-dependencies-{{ checksum "package.json" }}
+            - v2-dependencies-
       - run: npm install
       - save_cache:
           paths:
             - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
+          key: v2-dependencies-{{ checksum "package.json" }}
       - persist_to_workspace:
           root: ~/repo
           paths: .
+
   lint_test:
     <<: *defaults
     steps:
@@ -36,6 +37,7 @@ jobs:
       - run:
           name: Report coverage
           command: npm run codecov
+
   deploy:
     <<: *defaults
     steps:
@@ -55,29 +57,29 @@ workflows:
       - checkout:
           filters:
             branches:
-              only: /.*/
+              ignore:
+                - master
       - lint_test:
-          filters:
-            branches:
-              only: /.*/
           requires:
             - checkout
-  release:
+          filters:
+            branches:
+              ignore:
+                - master
+  deploy:
     jobs:
       - checkout:
           filters:
-            tags:
-              only: /^v.*/
             branches:
-              ignore: /.*/
+              only:
+                - master
       - lint_test:
           requires:
             - checkout
           filters:
-            tags:
-              only: /^v.*/
             branches:
-              ignore: /.*/
+              only:
+                - master
       - deploy:
           requires:
             - lint_test
@@ -85,4 +87,5 @@ workflows:
             tags:
               only: /^v.*/
             branches:
-              ignore: /.*/
+              only:
+                - master
