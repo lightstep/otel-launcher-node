@@ -45,12 +45,12 @@
     "access": "public"
   },
   "dependencies": {
-    "@opentelemetry/api": "^0.10.0",
-    "@opentelemetry/core": "^0.10.0",
-    "@opentelemetry/exporter-collector": "^0.10.0",
-    "@opentelemetry/node": "^0.10.0",
-    "@opentelemetry/resources": "^0.10.0",
-    "@opentelemetry/sdk-node": "^0.10.0"
+    "@opentelemetry/api": "^0.10.2",
+    "@opentelemetry/core": "^0.10.2",
+    "@opentelemetry/exporter-collector": "^0.10.2",
+    "@opentelemetry/node": "^0.10.2",
+    "@opentelemetry/resources": "^0.10.2",
+    "@opentelemetry/sdk-node": "^0.10.2"
   },
   "devDependencies": {
     "@types/mocha": "7.0.2",
