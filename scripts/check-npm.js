@@ -11,6 +11,7 @@ packageJson(pJson.name.toLowerCase())
       process.exit(0);
     }
   })
-  .catch(error => {
+  .catch(() => {
+    console.log(pJson.version);
     process.exit(0);
   });
