@@ -56,10 +56,14 @@ workflows:
     jobs:
       - checkout:
           filters:
+            tags:
+              ignore: /^v.*/
             branches:
               only: /.*/
       - lint_test:
           filters:
+            tags:
+              ignore: /^v.*/
             branches:
               only: /.*/
           requires:
