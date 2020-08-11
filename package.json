@@ -49,6 +49,7 @@
     "@opentelemetry/core": "^0.10.2",
     "@opentelemetry/exporter-collector": "^0.10.2",
     "@opentelemetry/node": "^0.10.2",
+    "@opentelemetry/plugins-node-all": "^0.10.2",
     "@opentelemetry/resources": "^0.10.2",
     "@opentelemetry/sdk-node": "^0.10.2"
   },
