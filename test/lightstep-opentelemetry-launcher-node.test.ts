@@ -204,7 +204,7 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
       it(
         'OTEL_RESOURCE_LABELS should take value' +
           ' from OTEL_RESOURCE_ATTRIBUTES',
-        async () => {
+        () => {
           process.env.OTEL_RESOURCE_ATTRIBUTES = 'foofoo';
           lightstep.configureOpenTelemetry(minimalConfig);
           assert.strictEqual(process.env.OTEL_RESOURCE_LABELS, 'foofoo');
