@@ -47,7 +47,7 @@ sdk.start().then(() => {
 | accessToken    | LS_ACCESS_TOKEN                    | n        | -                                                  |
 | logLevel       | OTEL_LOG_LEVEL                     | n        | info                                               |
 | propagators    | OTEL_PROPAGATORS                   | n        | b3                                                 |
-| resource       | OTEL_RESOURCE_LABELS               | n        | -                                                  |
+| resource       | OTEL_RESOURCE_ATTRIBUTES           | n        | -                                                  |
 
 #### Additional Options
 

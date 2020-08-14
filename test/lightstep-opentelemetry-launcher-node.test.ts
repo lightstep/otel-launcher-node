@@ -199,5 +199,17 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
         assert.deepEqual(propagation['_getGlobalPropagator'](), propagator);
       });
     });
+
+    describe('environment legacy', () => {
+      it(
+        'OTEL_RESOURCE_LABELS should take value' +
+          ' from OTEL_RESOURCE_ATTRIBUTES',
+        () => {
+          process.env.OTEL_RESOURCE_ATTRIBUTES = 'foofoo';
+          lightstep.configureOpenTelemetry(minimalConfig);
+          assert.strictEqual(process.env.OTEL_RESOURCE_LABELS, 'foofoo');
+        }
+      );
+    });
   });
 });

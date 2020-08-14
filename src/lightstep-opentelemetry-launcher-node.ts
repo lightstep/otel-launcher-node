@@ -58,6 +58,8 @@ let fail: types.FailureHandler;
 export function configureOpenTelemetry(
   config: Partial<types.LightstepNodeSDKConfiguration> = {}
 ): NodeSDK {
+  _fixProcessEnvironmentLegacy();
+
   logger = setupLogger(config);
   fail = config.failureHandler || defaultFailureHandler(logger);
 
@@ -68,6 +70,13 @@ export function configureOpenTelemetry(
   configureTraceExporter(config);
 
   return new NodeSDK(config);
+}
+
+function _fixProcessEnvironmentLegacy() {
+  //@TODO remove it once we use version that supports OTEL_RESOURCE_ATTRIBUTES
+  if (process.env.OTEL_RESOURCE_ATTRIBUTES) {
+    process.env.OTEL_RESOURCE_LABELS = process.env.OTEL_RESOURCE_ATTRIBUTES;
+  }
 }
 
 /**
