@@ -6,16 +6,13 @@ import {
   HttpCorrelationContext,
   HttpTraceContext,
 } from '@opentelemetry/core';
-import { HttpTextPropagator, Logger } from '@opentelemetry/api';
+import { TextMapPropagator, Logger } from '@opentelemetry/api';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as types from './types';
-import {
-  CollectorTraceExporter,
-  CollectorProtocolNode,
-} from '@opentelemetry/exporter-collector';
+import { CollectorTraceExporter } from '@opentelemetry/exporter-collector';
 import {
   Resource,
-  ResourceLabels,
+  ResourceAttributes,
   SERVICE_RESOURCE,
 } from '@opentelemetry/resources';
 
@@ -58,8 +55,6 @@ let fail: types.FailureHandler;
 export function configureOpenTelemetry(
   config: Partial<types.LightstepNodeSDKConfiguration> = {}
 ): NodeSDK {
-  _fixProcessEnvironmentLegacy();
-
   logger = setupLogger(config);
   fail = config.failureHandler || defaultFailureHandler(logger);
 
@@ -70,13 +65,6 @@ export function configureOpenTelemetry(
   configureTraceExporter(config);
 
   return new NodeSDK(config);
-}
-
-function _fixProcessEnvironmentLegacy() {
-  //@TODO remove it once we use version that supports OTEL_RESOURCE_ATTRIBUTES
-  if (process.env.OTEL_RESOURCE_ATTRIBUTES) {
-    process.env.OTEL_RESOURCE_LABELS = process.env.OTEL_RESOURCE_ATTRIBUTES;
-  }
 }
 
 /**
@@ -230,14 +218,14 @@ function validateServiceName(
 function configureBaseResource(
   config: Partial<types.LightstepNodeSDKConfiguration>
 ) {
-  const labels: ResourceLabels = {
+  const attributes: ResourceAttributes = {
     [SERVICE_RESOURCE.NAME]: config.serviceName!,
   };
   if (config.serviceVersion) {
-    labels[SERVICE_RESOURCE.VERSION] = config.serviceVersion;
+    attributes[SERVICE_RESOURCE.VERSION] = config.serviceVersion;
   }
 
-  const baseResource: Resource = new Resource(labels);
+  const baseResource: Resource = new Resource(attributes);
 
   if (config.resource) {
     config.resource = config.resource.merge(baseResource);
@@ -264,7 +252,6 @@ function configureTraceExporter(
   }
 
   config.traceExporter = new CollectorTraceExporter({
-    protocolNode: CollectorProtocolNode.HTTP_JSON,
     serviceName: config.serviceName,
     url: config.spanEndpoint,
     headers,
@@ -278,7 +265,7 @@ function configureTraceExporter(
  * tracecontext, correlationcontext.
  * @param name
  */
-function createPropagator(name: types.PropagationFormat): HttpTextPropagator {
+function createPropagator(name: types.PropagationFormat): TextMapPropagator {
   const propagatorClass = PROPAGATOR_LOOKUP_MAP[name];
   if (!propagatorClass) {
     fail(
@@ -299,16 +286,16 @@ function createPropagator(name: types.PropagationFormat): HttpTextPropagator {
 function configurePropagation(
   config: Partial<types.LightstepNodeSDKConfiguration>
 ) {
-  if (config.httpTextPropagator) {
+  if (config.textMapPropagator) {
     return;
   }
 
-  const propagators: Array<HttpTextPropagator> = (
+  const propagators: Array<TextMapPropagator> = (
     config.propagators?.split(',') || [PROPAGATION_FORMATS.B3]
   ).map(name => createPropagator(name.trim() as types.PropagationFormat));
   if (propagators.length > 1) {
-    config.httpTextPropagator = new CompositePropagator({ propagators });
+    config.textMapPropagator = new CompositePropagator({ propagators });
   } else {
-    config.httpTextPropagator = propagators[0];
+    config.textMapPropagator = propagators[0];
   }
 }
