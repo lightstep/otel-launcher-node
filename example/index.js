@@ -13,5 +13,6 @@ sdk.start().then(() => {
   const span = tracer.startSpan('test-span');
   span.end();
 
-  opentelemetry.trace.getTracerProvider().getActiveSpanProcessor().shutdown();
-});
+  // force to export traces
+  tracer.getActiveSpanProcessor().shutdown();
+}, console.log);

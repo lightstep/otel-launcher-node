@@ -65,10 +65,11 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
         });
         assert.ok(sdk instanceof NodeSDK);
         await sdk.start();
+        const tracer = (trace.getTracerProvider() as NodeTracerProvider).getTracer(
+          'test'
+        );
         assert.strictEqual(
-          (trace.getTracerProvider() as NodeTracerProvider).resource.labels[
-            SERVICE_RESOURCE.NAME
-          ],
+          tracer.resource.attributes[SERVICE_RESOURCE.NAME],
           serviceName
         );
       });
@@ -116,11 +117,11 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
         assert.ok(sdk instanceof NodeSDK);
 
         await sdk.start();
-
+        const tracer = (trace.getTracerProvider() as NodeTracerProvider).getTracer(
+          'test'
+        );
         assert.strictEqual(
-          (trace.getTracerProvider() as NodeTracerProvider).resource.labels[
-            SERVICE_RESOURCE.VERSION
-          ],
+          tracer.resource.attributes[SERVICE_RESOURCE.VERSION],
           serviceVersion
         );
       });
@@ -192,24 +193,15 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
         const propagator = new HttpTraceContext();
         const sdk = lightstep.configureOpenTelemetry({
           ...minimalConfig,
-          httpTextPropagator: propagator,
+          textMapPropagator: propagator,
         });
 
         await sdk.start();
-        assert.deepEqual(propagation['_getGlobalPropagator'](), propagator);
+        assert.deepStrictEqual(
+          propagation['_getGlobalPropagator'](),
+          propagator
+        );
       });
-    });
-
-    describe('environment legacy', () => {
-      it(
-        'OTEL_RESOURCE_LABELS should take value' +
-          ' from OTEL_RESOURCE_ATTRIBUTES',
-        () => {
-          process.env.OTEL_RESOURCE_ATTRIBUTES = 'foofoo';
-          lightstep.configureOpenTelemetry(minimalConfig);
-          assert.strictEqual(process.env.OTEL_RESOURCE_LABELS, 'foofoo');
-        }
-      );
     });
   });
 });
