@@ -1,6 +1,6 @@
 # Launcher, an OpenTelemetry Configuration Layer 🚀
 
-_NOTE: the code in this repo is currently in alpha and will likely change_
+_NOTE: This is in beta and is expected to GA in Fall 2020._
 
 ### What is Launcher?
 
