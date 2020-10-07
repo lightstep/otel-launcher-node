@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import * as sinon from 'sinon';
 import { lightstep, LightstepConfigurationError, LightstepEnv } from '../src';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { trace, metrics, context, propagation } from '@opentelemetry/api';
@@ -7,8 +8,9 @@ import {
   CompositePropagator,
   HttpTraceContext,
 } from '@opentelemetry/core';
-import { SERVICE_RESOURCE } from '@opentelemetry/resources';
+import { HOST_RESOURCE, SERVICE_RESOURCE } from '@opentelemetry/resources';
 import { NodeTracerProvider } from '@opentelemetry/node';
+import * as os from 'os';
 
 describe('Lightstep OpenTelemetry Launcher Node', () => {
   describe('configureSDK', () => {
@@ -123,6 +125,31 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
         assert.strictEqual(
           tracer.resource.attributes[SERVICE_RESOURCE.VERSION],
           serviceVersion
+        );
+      });
+    });
+
+    describe('hostname', () => {
+      it('is added to resource', async () => {
+        const expectedHostname = 'hostymchost.local';
+        const hostnameStub = sinon.stub(os, 'hostname');
+        hostnameStub.returns(expectedHostname);
+
+        const sdk = lightstep.configureOpenTelemetry(minimalConfig);
+        assert.ok(sdk instanceof NodeSDK);
+
+        await sdk.start();
+
+        const tracer = (trace.getTracerProvider() as NodeTracerProvider).getTracer(
+          'test'
+        );
+
+        hostnameStub.restore();
+
+        assert.strictEqual(hostnameStub.callCount, 1);
+        assert.strictEqual(
+          tracer.resource.attributes[HOST_RESOURCE.NAME],
+          expectedHostname
         );
       });
     });

@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+* Auto-detects and adds the host.name resource attribute by default.
+
 ## 0.11.0
 
 * Dependencies have been upgraded to the latest OpenTelemetry JS versions 
