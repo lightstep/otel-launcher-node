@@ -8,7 +8,11 @@ import {
   CompositePropagator,
   HttpTraceContext,
 } from '@opentelemetry/core';
-import { HOST_RESOURCE, SERVICE_RESOURCE } from '@opentelemetry/resources';
+import {
+  HOST_RESOURCE,
+  SERVICE_RESOURCE,
+  Resource,
+} from '@opentelemetry/resources';
 import { NodeTracerProvider } from '@opentelemetry/node';
 import * as os from 'os';
 
@@ -130,11 +134,19 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
     });
 
     describe('hostname', () => {
-      it('is added to resource', async () => {
-        const expectedHostname = 'hostymchost.local';
-        const hostnameStub = sinon.stub(os, 'hostname');
-        hostnameStub.returns(expectedHostname);
+      const stubbedHostname = 'hostymcstubs.local';
+      let hostnameStub: sinon.SinonStub;
 
+      beforeEach(() => {
+        hostnameStub = sinon.stub(os, 'hostname');
+        hostnameStub.returns(stubbedHostname);
+      });
+
+      afterEach(() => {
+        hostnameStub.restore();
+      });
+
+      it('is added to resource by default', async () => {
         const sdk = lightstep.configureOpenTelemetry(minimalConfig);
         assert.ok(sdk instanceof NodeSDK);
 
@@ -144,12 +156,51 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
           'test'
         );
 
-        hostnameStub.restore();
-
         assert.strictEqual(hostnameStub.callCount, 1);
         assert.strictEqual(
           tracer.resource.attributes[HOST_RESOURCE.NAME],
-          expectedHostname
+          stubbedHostname
+        );
+      });
+
+      it('is set to user-provided host name, if provided', async () => {
+        const resource = new Resource({
+          [HOST_RESOURCE.NAME]: 'customhost.local',
+        });
+        const sdk = lightstep.configureOpenTelemetry({
+          ...minimalConfig,
+          resource,
+        });
+        assert.ok(sdk instanceof NodeSDK);
+
+        await sdk.start();
+
+        const tracer = (trace.getTracerProvider() as NodeTracerProvider).getTracer(
+          'test'
+        );
+
+        assert.strictEqual(
+          tracer.resource.attributes[HOST_RESOURCE.NAME],
+          'customhost.local'
+        );
+      });
+
+      it('is set to env.HOSTNAME, if provided', async () => {
+        process.env.HOSTNAME = 'envhost.local';
+        const sdk = lightstep.configureOpenTelemetry(minimalConfig);
+        assert.ok(sdk instanceof NodeSDK);
+
+        await sdk.start();
+
+        const tracer = (trace.getTracerProvider() as NodeTracerProvider).getTracer(
+          'test'
+        );
+        delete process.env.HOSTNAME;
+
+        assert.strictEqual(hostnameStub.callCount, 0);
+        assert.strictEqual(
+          tracer.resource.attributes[HOST_RESOURCE.NAME],
+          'envhost.local'
         );
       });
     });

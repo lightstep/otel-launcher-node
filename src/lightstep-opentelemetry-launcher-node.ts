@@ -226,7 +226,8 @@ function configureBaseResource(
   if (config.serviceVersion) {
     attributes[SERVICE_RESOURCE.VERSION] = config.serviceVersion;
   }
-  attributes[HOST_RESOURCE.NAME] = os.hostname();
+
+  attributes[HOST_RESOURCE.NAME] = process.env.HOSTNAME || os.hostname();
 
   const baseResource: Resource = new Resource(attributes);
 
