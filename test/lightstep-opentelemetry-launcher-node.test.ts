@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import * as sinon from 'sinon';
 import { lightstep, LightstepConfigurationError, LightstepEnv } from '../src';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { trace, metrics, context, propagation } from '@opentelemetry/api';
@@ -7,8 +8,13 @@ import {
   CompositePropagator,
   HttpTraceContext,
 } from '@opentelemetry/core';
-import { SERVICE_RESOURCE } from '@opentelemetry/resources';
+import {
+  HOST_RESOURCE,
+  SERVICE_RESOURCE,
+  Resource,
+} from '@opentelemetry/resources';
 import { NodeTracerProvider } from '@opentelemetry/node';
+import * as os from 'os';
 
 describe('Lightstep OpenTelemetry Launcher Node', () => {
   describe('configureSDK', () => {
@@ -123,6 +129,76 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
         assert.strictEqual(
           tracer.resource.attributes[SERVICE_RESOURCE.VERSION],
           serviceVersion
+        );
+      });
+    });
+
+    describe('hostname', () => {
+      const stubbedHostname = 'hostymcstubs.local';
+      let sandbox: sinon.SinonSandbox;
+
+      beforeEach(() => {
+        sandbox = sinon.createSandbox();
+        sandbox.stub(os, 'hostname').returns(stubbedHostname);
+      });
+
+      afterEach(() => {
+        sandbox.restore();
+      });
+
+      it('is added to resource by default', async () => {
+        const sdk = lightstep.configureOpenTelemetry(minimalConfig);
+        assert.ok(sdk instanceof NodeSDK);
+
+        await sdk.start();
+
+        const tracer = (trace.getTracerProvider() as NodeTracerProvider).getTracer(
+          'test'
+        );
+
+        assert.strictEqual(
+          tracer.resource.attributes[HOST_RESOURCE.NAME],
+          stubbedHostname
+        );
+      });
+
+      it('is set to user-provided host name, if provided', async () => {
+        const resource = new Resource({
+          [HOST_RESOURCE.NAME]: 'customhost.local',
+        });
+        const sdk = lightstep.configureOpenTelemetry({
+          ...minimalConfig,
+          resource,
+        });
+        assert.ok(sdk instanceof NodeSDK);
+
+        await sdk.start();
+
+        const tracer = (trace.getTracerProvider() as NodeTracerProvider).getTracer(
+          'test'
+        );
+
+        assert.strictEqual(
+          tracer.resource.attributes[HOST_RESOURCE.NAME],
+          'customhost.local'
+        );
+      });
+
+      it('is set to env.HOSTNAME, if provided', async () => {
+        sandbox.stub(process, 'env').value({ HOSTNAME: 'envhost.local' });
+
+        const sdk = lightstep.configureOpenTelemetry(minimalConfig);
+        assert.ok(sdk instanceof NodeSDK);
+
+        await sdk.start();
+
+        const tracer = (trace.getTracerProvider() as NodeTracerProvider).getTracer(
+          'test'
+        );
+
+        assert.strictEqual(
+          tracer.resource.attributes[HOST_RESOURCE.NAME],
+          'envhost.local'
         );
       });
     });

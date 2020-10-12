@@ -11,10 +11,12 @@ import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as types from './types';
 import { CollectorTraceExporter } from '@opentelemetry/exporter-collector';
 import {
+  HOST_RESOURCE,
   Resource,
   ResourceAttributes,
   SERVICE_RESOURCE,
 } from '@opentelemetry/resources';
+import * as os from 'os';
 
 const PROPAGATION_FORMATS: { [key: string]: types.PropagationFormat } = {
   B3: 'b3',
@@ -224,6 +226,8 @@ function configureBaseResource(
   if (config.serviceVersion) {
     attributes[SERVICE_RESOURCE.VERSION] = config.serviceVersion;
   }
+
+  attributes[HOST_RESOURCE.NAME] = process.env.HOSTNAME || os.hostname();
 
   const baseResource: Resource = new Resource(attributes);
 
