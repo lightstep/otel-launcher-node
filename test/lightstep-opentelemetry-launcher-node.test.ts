@@ -135,15 +135,15 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
 
     describe('hostname', () => {
       const stubbedHostname = 'hostymcstubs.local';
-      let hostnameStub: sinon.SinonStub;
+      let sandbox: sinon.SinonSandbox;
 
       beforeEach(() => {
-        hostnameStub = sinon.stub(os, 'hostname');
-        hostnameStub.returns(stubbedHostname);
+        sandbox = sinon.createSandbox();
+        sandbox.stub(os, 'hostname').returns(stubbedHostname);
       });
 
       afterEach(() => {
-        hostnameStub.restore();
+        sandbox.restore();
       });
 
       it('is added to resource by default', async () => {
@@ -156,7 +156,6 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
           'test'
         );
 
-        assert.strictEqual(hostnameStub.callCount, 1);
         assert.strictEqual(
           tracer.resource.attributes[HOST_RESOURCE.NAME],
           stubbedHostname
@@ -186,7 +185,8 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
       });
 
       it('is set to env.HOSTNAME, if provided', async () => {
-        process.env.HOSTNAME = 'envhost.local';
+        sandbox.stub(process, 'env').value({ HOSTNAME: 'envhost.local' });
+
         const sdk = lightstep.configureOpenTelemetry(minimalConfig);
         assert.ok(sdk instanceof NodeSDK);
 
@@ -195,9 +195,7 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
         const tracer = (trace.getTracerProvider() as NodeTracerProvider).getTracer(
           'test'
         );
-        delete process.env.HOSTNAME;
 
-        assert.strictEqual(hostnameStub.callCount, 0);
         assert.strictEqual(
           tracer.resource.attributes[HOST_RESOURCE.NAME],
           'envhost.local'
