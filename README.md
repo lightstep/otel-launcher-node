@@ -1,4 +1,4 @@
-# Launcher, an OpenTelemetry Configuration Layer 🚀
+# Launcher, a Lightstep Distro for OpenTelemetry 🚀
 
 _NOTE: This is in beta and is expected to GA in Fall 2020._
 
