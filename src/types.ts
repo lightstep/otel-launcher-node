@@ -31,4 +31,4 @@ export interface LightstepNodeSDKConfiguration
 export class LightstepConfigurationError extends Error {}
 
 /** Supported propagation formats */
-export type PropagationFormat = 'b3' | 'tracecontext' | 'correlationcontext';
+export type PropagationFormat = 'b3' | 'b3single' | 'tracecontext' | 'baggage';

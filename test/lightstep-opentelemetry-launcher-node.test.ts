@@ -229,6 +229,22 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
         assert.ok(tc instanceof HttpTraceContext);
       });
 
+      it('can be assigned using a comma delimited string', async () => {
+        const sdk = lightstep.configureOpenTelemetry({
+          accessToken,
+          serviceName,
+          propagators: 'b3single,tracecontext',
+        });
+
+        await sdk.start();
+        const propagator = propagation['_getGlobalPropagator']();
+        assert.ok(propagator instanceof CompositePropagator);
+
+        const [b3, tc] = propagator['_propagators'];
+        assert.ok(b3 instanceof B3Propagator);
+        assert.ok(tc instanceof HttpTraceContext);
+      });
+
       it('can be assigned using a comma delimited string from environment', async () => {
         process.env.OTEL_PROPAGATORS = 'b3,tracecontext';
         const sdk = lightstep.configureOpenTelemetry(minimalConfig);
