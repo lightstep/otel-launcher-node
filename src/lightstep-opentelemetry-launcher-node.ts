@@ -5,6 +5,7 @@ import {
   B3Propagator,
   HttpCorrelationContext,
   HttpTraceContext,
+  B3InjectEncoding,
 } from '@opentelemetry/core';
 import { TextMapPropagator, Logger } from '@opentelemetry/api';
 import { NodeSDK } from '@opentelemetry/sdk-node';
@@ -20,8 +21,9 @@ import * as os from 'os';
 
 const PROPAGATION_FORMATS: { [key: string]: types.PropagationFormat } = {
   B3: 'b3',
+  B3SINGLE: 'b3single',
   TRACECONTEXT: 'tracecontext',
-  CORRELATIONCONTEXT: 'correlationcontext',
+  BAGGAGE: 'baggage',
 };
 
 /** Map of propagation format to class implementing the format */
@@ -32,8 +34,9 @@ const PROPAGATOR_LOOKUP_MAP: {
     | typeof HttpCorrelationContext;
 } = {
   b3: B3Propagator,
+  b3single: B3Propagator,
   tracecontext: HttpTraceContext,
-  correlationcontext: HttpCorrelationContext,
+  baggage: HttpCorrelationContext,
 };
 
 /** Default values for LightstepNodeSDKConfiguration */
@@ -273,8 +276,17 @@ function createPropagator(name: types.PropagationFormat): TextMapPropagator {
   const propagatorClass = PROPAGATOR_LOOKUP_MAP[name];
   if (!propagatorClass) {
     fail(
-      `Invalid configuration: unknown propagator specified: ${name}. Supported propagators are: b3, tracecontext, correlationcontext`
+      `Invalid configuration: unknown propagator specified: ${name}. Supported propagators are: b3, b3single, baggage, tracecontext`
     );
+  }
+  if (name === 'b3') {
+    return new propagatorClass({
+      injectEncoding: B3InjectEncoding.MULTI_HEADER,
+    });
+  } else if (name === 'b3single') {
+    return new propagatorClass({
+      injectEncoding: B3InjectEncoding.SINGLE_HEADER,
+    });
   }
 
   return new propagatorClass();
