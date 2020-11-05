@@ -32,7 +32,7 @@ sdk.start().then(() => {
   const span = tracer.startSpan('test-span');
   span.end();
 
-  opentelemetry.trace.getTracerProvider().getActiveSpanProcessor().shutdown();
+  tracer.getActiveSpanProcessor().shutdown();
 });
 ```
 
