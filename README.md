@@ -38,16 +38,17 @@ sdk.start().then(() => {
 
 ### Configuration Options
 
-| Config Option  | Env Variable                       | Required | Default                                            |
-| -------------- | ---------------------------------- | -------- | -------------------------------------------------- |
-| serviceName    | LS_SERVICE_NAME                    | y        | -                                                  |
-| serviceVersion | LS_SERVICE_VERSION                 | n        | unknown                                            |
-| spanEndpoint   | OTEL_EXPORTER_OTLP_SPAN_ENDPOINT   | n        | https://ingest.lightstep.com:443/api/v2/otel/trace |
-| metricEndpoint | OTEL_EXPORTER_OTLP_METRIC_ENDPOINT | n        | https://ingest.lightstep.com:443/metrics           |
-| accessToken    | LS_ACCESS_TOKEN                    | n        | -                                                  |
-| logLevel       | OTEL_LOG_LEVEL                     | n        | info                                               |
-| propagators    | OTEL_PROPAGATORS                   | n        | b3                                                 |
-| resource       | OTEL_RESOURCE_ATTRIBUTES           | n        | -                                                  |
+| Config Option        | Env Variable                       | Required | Default                                            |
+| -------------------- | ---------------------------------- | -------- | -------------------------------------------------- |
+| serviceName          | LS_SERVICE_NAME                    | y        | -                                                  |
+| serviceVersion       | LS_SERVICE_VERSION                 | n        | unknown                                            |
+| spanEndpoint         | OTEL_EXPORTER_OTLP_SPAN_ENDPOINT   | n        | https://ingest.lightstep.com:443/api/v2/otel/trace |
+| metricEndpoint       | OTEL_EXPORTER_OTLP_METRIC_ENDPOINT | n        | https://ingest.lightstep.com:443/metrics           |
+| accessToken          | LS_ACCESS_TOKEN                    | n        | -                                                  |
+| logLevel             | OTEL_LOG_LEVEL                     | n        | info                                               |
+| propagators          | OTEL_PROPAGATORS                   | n        | b3                                                 |
+| resource             | OTEL_RESOURCE_ATTRIBUTES           | n        | -                                                  |
+| metricsHostEnabled   | LS_METRICS_HOST_ENABLED            | n        | true                                               |
 
 #### Additional Options
 
