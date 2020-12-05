@@ -2,12 +2,11 @@ import {
   ConsoleLogger,
   LogLevel,
   CompositePropagator,
-  B3Propagator,
   HttpCorrelationContext,
   HttpTraceContext,
-  B3InjectEncoding,
 } from '@opentelemetry/core';
 import { TextMapPropagator, Logger } from '@opentelemetry/api';
+import { B3Propagator, B3InjectEncoding } from '@opentelemetry/propagator-b3';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as types from './types';
 import { CollectorTraceExporter } from '@opentelemetry/exporter-collector';
