@@ -2,7 +2,7 @@ import {
   ConsoleLogger,
   LogLevel,
   CompositePropagator,
-  HttpCorrelationContext,
+  HttpBaggage,
   HttpTraceContext,
 } from '@opentelemetry/core';
 import { TextMapPropagator, Logger } from '@opentelemetry/api';
@@ -30,12 +30,12 @@ const PROPAGATOR_LOOKUP_MAP: {
   [key: string]:
     | typeof B3Propagator
     | typeof HttpTraceContext
-    | typeof HttpCorrelationContext;
+    | typeof HttpBaggage;
 } = {
   b3: B3Propagator,
   b3single: B3Propagator,
   tracecontext: HttpTraceContext,
-  baggage: HttpCorrelationContext,
+  baggage: HttpBaggage,
 };
 
 /** Default values for LightstepNodeSDKConfiguration */
