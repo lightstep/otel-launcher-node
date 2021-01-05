@@ -2,21 +2,26 @@ import {
   ConsoleLogger,
   LogLevel,
   CompositePropagator,
-  B3Propagator,
-  HttpCorrelationContext,
+  HttpBaggage,
   HttpTraceContext,
-  B3InjectEncoding,
 } from '@opentelemetry/core';
-import { TextMapPropagator, Logger } from '@opentelemetry/api';
+import { TextMapPropagator, Logger, metrics } from '@opentelemetry/api';
+import { B3InjectEncoding, B3Propagator } from '@opentelemetry/propagator-b3';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as types from './types';
-import { CollectorTraceExporter } from '@opentelemetry/exporter-collector';
+import {
+  CollectorMetricExporter,
+  CollectorTraceExporter,
+} from '@opentelemetry/exporter-collector';
 import {
   HOST_RESOURCE,
   Resource,
   ResourceAttributes,
   SERVICE_RESOURCE,
 } from '@opentelemetry/resources';
+
+const { HostMetrics } = require('@opentelemetry/host-metrics');
+
 import * as os from 'os';
 
 const PROPAGATION_FORMATS: { [key: string]: types.PropagationFormat } = {
@@ -31,19 +36,20 @@ const PROPAGATOR_LOOKUP_MAP: {
   [key: string]:
     | typeof B3Propagator
     | typeof HttpTraceContext
-    | typeof HttpCorrelationContext;
+    | typeof HttpBaggage;
 } = {
   b3: B3Propagator,
   b3single: B3Propagator,
   tracecontext: HttpTraceContext,
-  baggage: HttpCorrelationContext,
+  baggage: HttpBaggage,
 };
 
 /** Default values for LightstepNodeSDKConfiguration */
 const LS_DEFAULTS: Partial<types.LightstepNodeSDKConfiguration> = {
   spanEndpoint: 'https://ingest.lightstep.com:443/api/v2/otel/trace',
-  metricEndpoint: 'https://ingest.lightstep.com:443/metrics',
+  metricEndpoint: 'https://ingest.lightstep.com/metrics/otlp/v0.5',
   propagators: PROPAGATION_FORMATS.B3,
+  metricsHostEnabled: 'true',
 };
 
 const ACCESS_TOKEN_HEADER = 'Lightstep-Access-Token';
@@ -68,8 +74,39 @@ export function configureOpenTelemetry(
   configureBaseResource(config);
   configurePropagation(config);
   configureTraceExporter(config);
+  configureMetricExporter(config);
 
-  return new NodeSDK(config);
+  const sdk = new NodeSDK(config);
+
+  return patchSDK(sdk, config);
+}
+
+/**
+ * Patches the sdk start to be able to start metrics after sdk initialisation
+ * @param sdk
+ * @param config
+ */
+function patchSDK(
+  sdk: NodeSDK,
+  config: Partial<types.LightstepNodeSDKConfiguration>
+): NodeSDK {
+  if (!config.metricExporter || config.metricsHostEnabled !== 'true') {
+    return sdk;
+  }
+  const originalStart = sdk.start;
+
+  const start: () => Promise<void> = function (this: typeof sdk) {
+    const scope = this;
+    return new Promise((resolve, reject) => {
+      originalStart.call(scope).then(() => {
+        configureHostMetrics(config);
+        resolve();
+      }, reject);
+    });
+  };
+  sdk.start = start.bind(sdk);
+
+  return sdk;
 }
 
 /**
@@ -150,7 +187,7 @@ function configFromEnvironment(): Partial<types.LightstepNodeSDKConfiguration> {
   return Object.entries(types.LS_OPTION_ALIAS_MAP).reduce(
     (acc, [envName, optName]) => {
       const value = env[envName as keyof types.LightstepEnv];
-      if (value && optName) {
+      if (typeof value !== 'undefined' && optName) {
         acc[optName] = value;
       }
       return acc;
@@ -242,9 +279,50 @@ function configureBaseResource(
 }
 
 /**
+ * Configures export as JSON over HTTP to the configured metricEndpoint
+ * @param config
+ */
+function configureMetricExporter(
+  config: Partial<types.LightstepNodeSDKConfiguration>
+) {
+  if (config.metricExporter) {
+    return;
+  }
+
+  const headers: { [key: string]: string } = {};
+  if (config.accessToken) {
+    headers[ACCESS_TOKEN_HEADER] = config.accessToken;
+  }
+
+  config.metricExporter = new CollectorMetricExporter({
+    serviceName: config.serviceName,
+    url: config.metricEndpoint,
+    headers,
+    logger,
+  });
+}
+
+/**
+ * Configures host metrics
+ * @param config
+ */
+function configureHostMetrics(
+  config: Partial<types.LightstepNodeSDKConfiguration>
+) {
+  if (config.metricsHostEnabled !== 'true') {
+    return;
+  }
+  const meterProvider = metrics.getMeterProvider();
+  const hostMetrics = new HostMetrics({
+    meterProvider,
+    name: config.serviceName,
+  });
+  hostMetrics.start();
+}
+
+/**
  * Configures export as JSON over HTTP to the configured spanEndpoint
  * @param config
- * @todo support more formats
  */
 function configureTraceExporter(
   config: Partial<types.LightstepNodeSDKConfiguration>

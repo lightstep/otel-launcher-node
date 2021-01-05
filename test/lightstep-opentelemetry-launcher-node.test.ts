@@ -1,13 +1,10 @@
+import { B3Propagator } from '@opentelemetry/propagator-b3';
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import { lightstep, LightstepConfigurationError, LightstepEnv } from '../src';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { trace, metrics, context, propagation } from '@opentelemetry/api';
-import {
-  B3Propagator,
-  CompositePropagator,
-  HttpTraceContext,
-} from '@opentelemetry/core';
+import { CompositePropagator, HttpTraceContext } from '@opentelemetry/core';
 import {
   HOST_RESOURCE,
   SERVICE_RESOURCE,
