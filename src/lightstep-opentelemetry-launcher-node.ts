@@ -90,7 +90,7 @@ function patchSDK(
   sdk: NodeSDK,
   config: Partial<types.LightstepNodeSDKConfiguration>
 ): NodeSDK {
-  if (!config.metricExporter || !config.metricsHostEnabled) {
+  if (!config.metricExporter || config.metricsHostEnabled !== true) {
     return sdk;
   }
   const originalStart = sdk.start;
@@ -311,7 +311,7 @@ function configureMetricExporter(
 function configureHostMetrics(
   config: Partial<types.LightstepNodeSDKConfiguration>
 ) {
-  if (!config.metricsHostEnabled) {
+  if (!config.metricsHostEnabled !== true) {
     return;
   }
   const meterProvider = metrics.getMeterProvider();
