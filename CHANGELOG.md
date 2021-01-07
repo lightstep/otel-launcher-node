@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.13.0
+
+* Dependencies have been upgraded to the latest OpenTelemetry JS versions
+  (v0.14.0 for API and SDK components and v0.12.0 for plugins).
+* Automatically collects and sends host metrics to Lightstep. This behavior can
+  be controlled by setting the `LS_METRICS_HOST_ENABLED` environment variable,
+  or the `metricsHostEnabled` in-code configuration.
+
 ## 0.12.0
 * Dependencies have been upgraded to the latest OpenTelemetry JS versions 
   (v0.12.0 for API and SDK components and v0.11.0 for plugins).
