@@ -1,25 +1,30 @@
 import { NodeSDKConfiguration } from '@opentelemetry/sdk-node';
 
-/** Mapping of environment variable names to LightstepNodeSDKConfiguration names */
-export enum LS_OPTION_ALIAS_MAP {
-  LS_ACCESS_TOKEN = 'accessToken',
-  LS_METRICS_HOST_ENABLED = 'metricsHostEnabled',
-  LS_SERVICE_NAME = 'serviceName',
-  LS_SERVICE_VERSION = 'serviceVersion',
-  OTEL_EXPORTER_OTLP_SPAN_ENDPOINT = 'spanEndpoint',
-  OTEL_EXPORTER_OTLP_METRIC_ENDPOINT = 'metricEndpoint',
-  OTEL_PROPAGATORS = 'propagators',
+/** Lightstep specific configuration options */
+export interface LightstepConfigType {
+  accessToken?: string;
+  metricsHostEnabled?: boolean;
+  serviceName?: string;
+  serviceVersion?: string;
+  spanEndpoint?: string;
+  metricEndpoint?: string;
+  propagators?: string;
 }
 
-export type LightstepEnvType = {
-  [key in keyof typeof LS_OPTION_ALIAS_MAP]: string;
-};
-export type LightstepConfigType = Record<LS_OPTION_ALIAS_MAP, string>;
+/** Lightstep environment variable names */
+export interface LightstepEnvType {
+  LS_ACCESS_TOKEN?: string;
+  LS_METRICS_HOST_ENABLED?: string;
+  LS_SERVICE_NAME?: string;
+  LS_SERVICE_VERSION?: string;
+  OTEL_EXPORTER_OTLP_SPAN_ENDPOINT?: string;
+  OTEL_EXPORTER_OTLP_METRIC_ENDPOINT?: string;
+  OTEL_PROPAGATORS?: string;
+}
+
+export type LightstepEnv = Partial<LightstepEnvType>;
 
 export type FailureHandler = (message: string) => void;
-
-/** Lightstep environment variable names */
-export type LightstepEnv = Partial<LightstepEnvType>;
 
 /** Lightstep flavored configuration for the OpenTelemetry JS SDK */
 export interface LightstepNodeSDKConfiguration

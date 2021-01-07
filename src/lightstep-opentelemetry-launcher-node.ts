@@ -49,7 +49,7 @@ const LS_DEFAULTS: Partial<types.LightstepNodeSDKConfiguration> = {
   spanEndpoint: 'https://ingest.lightstep.com:443/api/v2/otel/trace',
   metricEndpoint: 'https://ingest.lightstep.com/metrics/otlp/v0.5',
   propagators: PROPAGATION_FORMATS.B3,
-  metricsHostEnabled: 'true',
+  metricsHostEnabled: true,
 };
 
 const ACCESS_TOKEN_HEADER = 'Lightstep-Access-Token';
@@ -90,7 +90,7 @@ function patchSDK(
   sdk: NodeSDK,
   config: Partial<types.LightstepNodeSDKConfiguration>
 ): NodeSDK {
-  if (!config.metricExporter || config.metricsHostEnabled !== 'true') {
+  if (!config.metricExporter || config.metricsHostEnabled !== true) {
     return sdk;
   }
   const originalStart = sdk.start;
@@ -183,17 +183,19 @@ function logConfig(
  * keys using lightstep conventions
  */
 function configFromEnvironment(): Partial<types.LightstepNodeSDKConfiguration> {
-  const env = process.env as types.LightstepEnv;
-  return Object.entries(types.LS_OPTION_ALIAS_MAP).reduce(
-    (acc, [envName, optName]) => {
-      const value = env[envName as keyof types.LightstepEnv];
-      if (typeof value !== 'undefined' && optName) {
-        acc[optName] = value;
-      }
-      return acc;
-    },
-    {} as types.LightstepConfigType
-  );
+  const env: types.LightstepEnv = process.env;
+  const envConfig: Partial<types.LightstepNodeSDKConfiguration> = {};
+  if (env.LS_ACCESS_TOKEN) envConfig.accessToken = env.LS_ACCESS_TOKEN;
+  if (env.LS_METRICS_HOST_ENABLED)
+    envConfig.metricsHostEnabled = env.LS_METRICS_HOST_ENABLED === 'true';
+  if (env.LS_SERVICE_NAME) envConfig.serviceName = env.LS_SERVICE_NAME;
+  if (env.LS_SERVICE_VERSION) envConfig.serviceVersion = env.LS_SERVICE_VERSION;
+  if (env.OTEL_EXPORTER_OTLP_SPAN_ENDPOINT)
+    envConfig.spanEndpoint = env.OTEL_EXPORTER_OTLP_SPAN_ENDPOINT;
+  if (env.OTEL_EXPORTER_OTLP_METRIC_ENDPOINT)
+    envConfig.metricEndpoint = env.OTEL_EXPORTER_OTLP_METRIC_ENDPOINT;
+  if (env.OTEL_PROPAGATORS) envConfig.propagators = env.OTEL_PROPAGATORS;
+  return envConfig;
 }
 
 /**
@@ -309,7 +311,7 @@ function configureMetricExporter(
 function configureHostMetrics(
   config: Partial<types.LightstepNodeSDKConfiguration>
 ) {
-  if (config.metricsHostEnabled !== 'true') {
+  if (!config.metricsHostEnabled !== true) {
     return;
   }
   const meterProvider = metrics.getMeterProvider();
