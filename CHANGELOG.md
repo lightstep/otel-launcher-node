@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+* Sends spans to an updated OTLP ingest endpoint that properly handles span
+  status for OTLP v0.6. Fixes issue [#33](https://github.com/lightstep/otel-launcher-node/issues/33).
+* Fixes configuration related bug that results in host metrics being disabled
+  by default.
+
 ## 0.13.0
 
 * Dependencies have been upgraded to the latest OpenTelemetry JS versions
