@@ -46,8 +46,8 @@ const PROPAGATOR_LOOKUP_MAP: {
 
 /** Default values for LightstepNodeSDKConfiguration */
 const LS_DEFAULTS: Partial<types.LightstepNodeSDKConfiguration> = {
-  spanEndpoint: 'https://ingest.lightstep.com:443/api/v2/otel/trace',
-  metricEndpoint: 'https://ingest.lightstep.com/metrics/otlp/v0.5',
+  spanEndpoint: 'https://ingest.lightstep.com/traces/otlp/v0.6',
+  metricEndpoint: 'https://ingest.lightstep.com/metrics/otlp/v0.6',
   propagators: PROPAGATION_FORMATS.B3,
   metricsHostEnabled: true,
 };
@@ -311,7 +311,7 @@ function configureMetricExporter(
 function configureHostMetrics(
   config: Partial<types.LightstepNodeSDKConfiguration>
 ) {
-  if (!config.metricsHostEnabled !== true) {
+  if (config.metricsHostEnabled !== true) {
     return;
   }
   const meterProvider = metrics.getMeterProvider();
