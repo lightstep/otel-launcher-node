@@ -311,7 +311,7 @@ function configureMetricExporter(
 function configureHostMetrics(
   config: Partial<types.LightstepNodeSDKConfiguration>
 ) {
-  if (!config.metricsHostEnabled !== true) {
+  if (config.metricsHostEnabled !== true) {
     return;
   }
   const meterProvider = metrics.getMeterProvider();
