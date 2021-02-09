@@ -28,12 +28,56 @@ const sdk = lightstep.configureOpenTelemetry({
 });
 
 sdk.start().then(() => {
-  const tracer = opentelemetry.trace.getTracer('otel-node-example');
-  const span = tracer.startSpan('test-span');
-  span.end();
-
-  tracer.getActiveSpanProcessor().shutdown();
+  // Make sure to load any modules you use after otel is started so that it
+  // has its module loading hooks in place
+  require('./server-main.js').startServer();
 });
+```
+
+To add some of your own custom instrumentation where the built-in automatic instrumentation of libraries isn't getting enough detail:
+
+```javascript
+// At the top level
+import { trace } from '@opentelemetry/api';
+
+const tracer = tracer.getTracer('myapp');
+
+// Around some code you want to trace the time taken
+function doSomethingOfInterest() {
+  const span = tracer.startSpan('test-span');
+  try {
+    tracer.withSpan(span, () => {
+      // ... magic happens here ...
+      // because this is inside withSpan, spans created in here will
+      // have `span` as their ancestor in the trace by default
+    });
+  } finally {
+    span.end();
+  }
+}
+```
+
+You might want to make a higher-order function to just add instrumentation to a function without changing it:
+
+```typescript
+import { SpanOptions, trace } from '@opentelemetry/api';
+
+const tracer = trace.getTracer('app');
+
+export default function withSpan<T extends (...args: any[]) => any>(
+  fn: T,
+  options?: SpanOptions,
+  name: string = fn.name,
+): T {
+  return (async (...args: Parameters<T>) => {
+    const span = tracer.startSpan(name, options);
+    try {
+      return await tracer.withSpan(span, () => fn(...args));
+    } finally {
+      span.end();
+    }
+  }) as any;
+}
 ```
 
 ### Configuration Options
