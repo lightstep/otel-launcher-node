@@ -5,7 +5,8 @@ import {
   HttpBaggage,
   HttpTraceContext,
 } from '@opentelemetry/core';
-import { TextMapPropagator, Logger, metrics } from '@opentelemetry/api';
+import { TextMapPropagator, Logger } from '@opentelemetry/api';
+import { metrics } from '@opentelemetry/api-metrics';
 import { B3InjectEncoding, B3Propagator } from '@opentelemetry/propagator-b3';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as types from './types';
