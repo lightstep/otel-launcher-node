@@ -3,7 +3,8 @@ import * as assert from 'assert';
 import * as sinon from 'sinon';
 import { lightstep, LightstepConfigurationError, LightstepEnv } from '../src';
 import { NodeSDK } from '@opentelemetry/sdk-node';
-import { trace, metrics, context, propagation } from '@opentelemetry/api';
+import { trace, context, propagation } from '@opentelemetry/api';
+import { metrics } from '@opentelemetry/api-metrics';
 import { CompositePropagator, HttpTraceContext } from '@opentelemetry/core';
 import {
   HOST_RESOURCE,

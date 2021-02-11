@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## Unreleased
+* Opentelemetry dependencies have been upgraded to v0.15.0 for core components
+  and v0.13.0 for contrib.
 
 ## 0.13.1
 
