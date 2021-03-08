@@ -43,12 +43,10 @@ sdk.start().then(() => {
 | serviceName        | LS_SERVICE_NAME                    | y        | -                                              |
 | serviceVersion     | LS_SERVICE_VERSION                 | n        | unknown                                        |
 | spanEndpoint       | OTEL_EXPORTER_OTLP_SPAN_ENDPOINT   | n        | https://ingest.lightstep.com/traces/otlp/v0.6  |
-| metricEndpoint     | OTEL_EXPORTER_OTLP_METRIC_ENDPOINT | n        | https://ingest.lightstep.com/metrics/otlp/v0.6 |
 | accessToken        | LS_ACCESS_TOKEN                    | n        | -                                              |
 | logLevel           | OTEL_LOG_LEVEL                     | n        | info                                           |
 | propagators        | OTEL_PROPAGATORS                   | n        | b3                                             |
 | resource           | OTEL_RESOURCE_ATTRIBUTES           | n        | -                                              |
-| metricsHostEnabled | LS_METRICS_HOST_ENABLED            | n        | true                                           |
 
 #### Additional Options
 
