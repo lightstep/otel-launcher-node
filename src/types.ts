@@ -4,11 +4,9 @@ import { NodeSDKConfiguration } from '@opentelemetry/sdk-node';
 /** Lightstep specific configuration options */
 export interface LightstepConfigType {
   accessToken?: string;
-  // metricsHostEnabled?: boolean;
   serviceName?: string;
   serviceVersion?: string;
   spanEndpoint?: string;
-  // metricEndpoint?: string;
   propagators?: string;
   logger?: DiagLogger;
   logLevel?: DiagLogLevel;
@@ -21,7 +19,6 @@ export interface LightstepEnvType {
   LS_SERVICE_NAME?: string;
   LS_SERVICE_VERSION?: string;
   OTEL_EXPORTER_OTLP_SPAN_ENDPOINT?: string;
-  OTEL_EXPORTER_OTLP_METRIC_ENDPOINT?: string;
   OTEL_PROPAGATORS?: string;
 }
 

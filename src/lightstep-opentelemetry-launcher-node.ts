@@ -71,11 +71,7 @@ export function configureOpenTelemetry(
   configurePropagation(config);
   configureTraceExporter(config);
 
-  const sdk = new NodeSDK(config);
-
-  return sdk;
-
-  // return patchSDK(sdk, config);
+  return new NodeSDK(config);
 }
 
 /**
@@ -237,7 +233,6 @@ function configureBaseResource(
 
   if (config.resource) {
     config.resource = baseResource.merge(config.resource);
-    // config.resource = config.resource.merge(baseResource);
   } else {
     config.resource = baseResource;
   }
