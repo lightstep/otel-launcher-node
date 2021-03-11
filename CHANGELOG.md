@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.15.0
+
+* Opentelemetry dependencies have been upgraded to v0.18.0 for core components
+  and v0.14.0 for contrib.
+* Auto-collection of host metrics has been removed as metrics are currently
+  experimental in OpenTelemetry. Early adopters can still use the OpenTelemetry
+  metrics packages, but must configure them manually. See the [OpenTelemetry JS](https://github.com/open-telemetry/opentelemetry-js) 
+  project docs for more information.
+
 ## 0.14.0
 
 * Opentelemetry dependencies have been upgraded to v0.15.0 for core components
