@@ -4,7 +4,6 @@ import * as sinon from 'sinon';
 import { lightstep, LightstepConfigurationError, LightstepEnv } from '../src';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { trace, context, propagation } from '@opentelemetry/api';
-import { metrics } from '@opentelemetry/api-metrics';
 import { CompositePropagator, HttpTraceContext } from '@opentelemetry/core';
 import {
   HOST_RESOURCE,
@@ -26,7 +25,6 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
       );
 
       trace.disable();
-      metrics.disable();
       context.disable();
       propagation.disable();
     });

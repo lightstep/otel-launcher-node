@@ -1,27 +1,25 @@
 import {
-  ConsoleLogger,
-  LogLevel,
   CompositePropagator,
   HttpBaggage,
   HttpTraceContext,
 } from '@opentelemetry/core';
-import { TextMapPropagator, Logger } from '@opentelemetry/api';
-import { metrics } from '@opentelemetry/api-metrics';
+import {
+  TextMapPropagator,
+  diag,
+  DiagLogger,
+  DiagLogLevel,
+  DiagConsoleLogger,
+} from '@opentelemetry/api';
 import { B3InjectEncoding, B3Propagator } from '@opentelemetry/propagator-b3';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as types from './types';
-import {
-  CollectorMetricExporter,
-  CollectorTraceExporter,
-} from '@opentelemetry/exporter-collector';
+import { CollectorTraceExporter } from '@opentelemetry/exporter-collector';
 import {
   HOST_RESOURCE,
   Resource,
   ResourceAttributes,
   SERVICE_RESOURCE,
 } from '@opentelemetry/resources';
-
-const { HostMetrics } = require('@opentelemetry/host-metrics');
 
 import * as os from 'os';
 
@@ -48,14 +46,11 @@ const PROPAGATOR_LOOKUP_MAP: {
 /** Default values for LightstepNodeSDKConfiguration */
 const LS_DEFAULTS: Partial<types.LightstepNodeSDKConfiguration> = {
   spanEndpoint: 'https://ingest.lightstep.com/traces/otlp/v0.6',
-  metricEndpoint: 'https://ingest.lightstep.com/metrics/otlp/v0.6',
   propagators: PROPAGATION_FORMATS.B3,
-  metricsHostEnabled: true,
 };
 
 const ACCESS_TOKEN_HEADER = 'Lightstep-Access-Token';
 
-let logger: Logger;
 let fail: types.FailureHandler;
 
 /**
@@ -67,47 +62,16 @@ let fail: types.FailureHandler;
 export function configureOpenTelemetry(
   config: Partial<types.LightstepNodeSDKConfiguration> = {}
 ): NodeSDK {
-  logger = setupLogger(config);
-  fail = config.failureHandler || defaultFailureHandler(logger);
+  setupLogger(config);
+  fail = config.failureHandler || defaultFailureHandler(diag);
 
   config = coalesceConfig(config);
   validateConfiguration(config);
   configureBaseResource(config);
   configurePropagation(config);
   configureTraceExporter(config);
-  configureMetricExporter(config);
 
-  const sdk = new NodeSDK(config);
-
-  return patchSDK(sdk, config);
-}
-
-/**
- * Patches the sdk start to be able to start metrics after sdk initialisation
- * @param sdk
- * @param config
- */
-function patchSDK(
-  sdk: NodeSDK,
-  config: Partial<types.LightstepNodeSDKConfiguration>
-): NodeSDK {
-  if (!config.metricExporter || config.metricsHostEnabled !== true) {
-    return sdk;
-  }
-  const originalStart = sdk.start;
-
-  const start: () => Promise<void> = function (this: typeof sdk) {
-    const scope = this;
-    return new Promise((resolve, reject) => {
-      originalStart.call(scope).then(() => {
-        configureHostMetrics(config);
-        resolve();
-      }, reject);
-    });
-  };
-  sdk.start = start.bind(sdk);
-
-  return sdk;
+  return new NodeSDK(config);
 }
 
 /**
@@ -119,31 +83,25 @@ function patchSDK(
  */
 function setupLogger(
   config: Partial<types.LightstepNodeSDKConfiguration>
-): Logger {
+): void {
   if (config.logger) {
-    return config.logger;
+    diag.setLogger(config.logger, config.logLevel);
+    return;
   }
 
-  let logLevel: LogLevel;
+  let logLevel: DiagLogLevel;
 
   if (config.logLevel !== undefined) {
     logLevel = config.logLevel;
   } else if (process.env.OTEL_LOG_LEVEL) {
     logLevel =
-      LogLevel[
-        process.env.OTEL_LOG_LEVEL.toUpperCase() as keyof typeof LogLevel
+      DiagLogLevel[
+        process.env.OTEL_LOG_LEVEL.toUpperCase() as keyof typeof DiagLogLevel
       ];
   } else {
-    logLevel = LogLevel.INFO;
+    logLevel = DiagLogLevel.INFO;
   }
-
-  const logger = new ConsoleLogger(logLevel);
-
-  if (logLevel === LogLevel.DEBUG && !config.logger) {
-    config.logger = logger;
-  }
-
-  return logger;
+  diag.setLogger(new DiagConsoleLogger(), logLevel);
 }
 
 /**
@@ -173,10 +131,13 @@ function logConfig(
   lsConfig: Partial<types.LightstepNodeSDKConfiguration>,
   mergedConfig: Partial<types.LightstepNodeSDKConfiguration>
 ) {
-  logger.debug('Default config: ', defaults);
-  logger.debug('Config from environment', envConfig);
-  logger.debug('Config from code: ', lsConfig);
-  logger.debug('Merged Config', mergedConfig);
+  diag.debug('Default config: ', defaults);
+  diag.debug('Default config: ', defaults);
+  diag.debug('Config from environment', envConfig);
+  diag.debug('Default config: ', defaults);
+  diag.debug('Config from code: ', lsConfig);
+  diag.debug('Default config: ', defaults);
+  diag.debug('Merged Config', mergedConfig);
 }
 
 /**
@@ -187,14 +148,10 @@ function configFromEnvironment(): Partial<types.LightstepNodeSDKConfiguration> {
   const env: types.LightstepEnv = process.env;
   const envConfig: Partial<types.LightstepNodeSDKConfiguration> = {};
   if (env.LS_ACCESS_TOKEN) envConfig.accessToken = env.LS_ACCESS_TOKEN;
-  if (env.LS_METRICS_HOST_ENABLED)
-    envConfig.metricsHostEnabled = env.LS_METRICS_HOST_ENABLED === 'true';
   if (env.LS_SERVICE_NAME) envConfig.serviceName = env.LS_SERVICE_NAME;
   if (env.LS_SERVICE_VERSION) envConfig.serviceVersion = env.LS_SERVICE_VERSION;
   if (env.OTEL_EXPORTER_OTLP_SPAN_ENDPOINT)
     envConfig.spanEndpoint = env.OTEL_EXPORTER_OTLP_SPAN_ENDPOINT;
-  if (env.OTEL_EXPORTER_OTLP_METRIC_ENDPOINT)
-    envConfig.metricEndpoint = env.OTEL_EXPORTER_OTLP_METRIC_ENDPOINT;
   if (env.OTEL_PROPAGATORS) envConfig.propagators = env.OTEL_PROPAGATORS;
   return envConfig;
 }
@@ -205,7 +162,7 @@ function configFromEnvironment(): Partial<types.LightstepNodeSDKConfiguration> {
  * LightstepNodeSDKConfiguration
  * @param logger
  */
-function defaultFailureHandler(logger: Logger): types.FailureHandler {
+function defaultFailureHandler(logger: DiagLogger): types.FailureHandler {
   return (message: string) => {
     logger.error(message);
     throw new types.LightstepConfigurationError(message);
@@ -275,52 +232,10 @@ function configureBaseResource(
   const baseResource: Resource = new Resource(attributes);
 
   if (config.resource) {
-    config.resource = config.resource.merge(baseResource);
+    config.resource = baseResource.merge(config.resource);
   } else {
     config.resource = baseResource;
   }
-}
-
-/**
- * Configures export as JSON over HTTP to the configured metricEndpoint
- * @param config
- */
-function configureMetricExporter(
-  config: Partial<types.LightstepNodeSDKConfiguration>
-) {
-  if (config.metricExporter) {
-    return;
-  }
-
-  const headers: { [key: string]: string } = {};
-  if (config.accessToken) {
-    headers[ACCESS_TOKEN_HEADER] = config.accessToken;
-  }
-
-  config.metricExporter = new CollectorMetricExporter({
-    serviceName: config.serviceName,
-    url: config.metricEndpoint,
-    headers,
-    logger,
-  });
-}
-
-/**
- * Configures host metrics
- * @param config
- */
-function configureHostMetrics(
-  config: Partial<types.LightstepNodeSDKConfiguration>
-) {
-  if (config.metricsHostEnabled !== true) {
-    return;
-  }
-  const meterProvider = metrics.getMeterProvider();
-  const hostMetrics = new HostMetrics({
-    meterProvider,
-    name: config.serviceName,
-  });
-  hostMetrics.start();
 }
 
 /**
@@ -343,7 +258,6 @@ function configureTraceExporter(
     serviceName: config.serviceName,
     url: config.spanEndpoint,
     headers,
-    logger,
   });
 }
 
