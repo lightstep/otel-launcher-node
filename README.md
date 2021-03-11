@@ -24,73 +24,38 @@ const {
 
 const sdk = lightstep.configureOpenTelemetry({
   accessToken: 'YOUR ACCESS TOKEN',
-  serviceName: 'locl-ex',
+  serviceName: 'otel-example',
 });
 
 sdk.start().then(() => {
   // Make sure to load any modules you use after otel is started so that it
-  // has its module loading hooks in place
+  // has its module loading hooks in place. In general, this is the right place
+  // to require your code.
   require('./server-main.js').startServer();
 });
 ```
 
-To add some of your own custom instrumentation where the built-in automatic instrumentation of libraries isn't getting enough detail:
+### Customization
 
-```javascript
-// At the top level
-import { trace } from '@opentelemetry/api';
+While the built-in automatic instrumentation will provide good coverage for many
+users, there are scenarios where users may want to write custom instrumentation,
+or enrich the existing telemetry. Below are links to some resources about the
+OpenTelemetry API and some examples of its usage:
 
-const tracer = tracer.getTracer('myapp');
-
-// Around some code you want to trace the time taken
-function doSomethingOfInterest() {
-  const span = tracer.startSpan('test-span');
-  try {
-    tracer.withSpan(span, () => {
-      // ... magic happens here ...
-      // because this is inside withSpan, spans created in here will
-      // have `span` as their ancestor in the trace by default
-    });
-  } finally {
-    span.end();
-  }
-}
-```
-
-You might want to make a higher-order function to just add instrumentation to a function without changing it:
-
-```typescript
-import { SpanOptions, trace } from '@opentelemetry/api';
-
-const tracer = trace.getTracer('app');
-
-export default function withSpan<T extends (...args: any[]) => any>(
-  fn: T,
-  options?: SpanOptions,
-  name: string = fn.name,
-): T {
-  return (async (...args: Parameters<T>) => {
-    const span = tracer.startSpan(name, options);
-    try {
-      return await tracer.withSpan(span, () => fn(...args));
-    } finally {
-      span.end();
-    }
-  }) as any;
-}
-```
+- [OpenTelemetry JS Tracing API][otel-js-tracing-api]
+- [OpenTelemetry JS Examples][otel-js-examples]
 
 ### Configuration Options
 
-| Config Option      | Env Variable                       | Required | Default                                        |
-| ------------------ | ---------------------------------- | -------- | ---------------------------------------------- |
-| serviceName        | LS_SERVICE_NAME                    | y        | -                                              |
-| serviceVersion     | LS_SERVICE_VERSION                 | n        | unknown                                        |
-| spanEndpoint       | OTEL_EXPORTER_OTLP_SPAN_ENDPOINT   | n        | https://ingest.lightstep.com/traces/otlp/v0.6  |
-| accessToken        | LS_ACCESS_TOKEN                    | n        | -                                              |
-| logLevel           | OTEL_LOG_LEVEL                     | n        | info                                           |
-| propagators        | OTEL_PROPAGATORS                   | n        | b3                                             |
-| resource           | OTEL_RESOURCE_ATTRIBUTES           | n        | -                                              |
+| Config Option  | Env Variable                     | Required | Default                                       |
+| -------------- | -------------------------------- | -------- | --------------------------------------------- |
+| serviceName    | LS_SERVICE_NAME                  | y        | -                                             |
+| serviceVersion | LS_SERVICE_VERSION               | n        | unknown                                       |
+| spanEndpoint   | OTEL_EXPORTER_OTLP_SPAN_ENDPOINT | n        | https://ingest.lightstep.com/traces/otlp/v0.6 |
+| accessToken    | LS_ACCESS_TOKEN                  | n        | -                                             |
+| logLevel       | OTEL_LOG_LEVEL                   | n        | info                                          |
+| propagators    | OTEL_PROPAGATORS                 | n        | b3                                            |
+| resource       | OTEL_RESOURCE_ATTRIBUTES         | n        | -                                             |
 
 #### Additional Options
 
@@ -113,3 +78,6 @@ Start using it today in [Go](https://github.com/lightstep/otel-launcher-go), [Ja
 ---
 
 _Made with_ ![:heart:](https://a.slack-edge.com/production-standard-emoji-assets/10.2/apple-medium/2764-fe0f.png) _@ [Lightstep](http://lightstep.com/)_
+
+[otel-js-tracing-api]: https://github.com/open-telemetry/opentelemetry-js-api/blob/main/docs/tracing.md
+[otel-js-examples]: https://github.com/open-telemetry/opentelemetry-js/tree/main/examples
