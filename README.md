@@ -24,29 +24,38 @@ const {
 
 const sdk = lightstep.configureOpenTelemetry({
   accessToken: 'YOUR ACCESS TOKEN',
-  serviceName: 'locl-ex',
+  serviceName: 'otel-example',
 });
 
 sdk.start().then(() => {
-  const tracer = opentelemetry.trace.getTracer('otel-node-example');
-  const span = tracer.startSpan('test-span');
-  span.end();
-
-  tracer.getActiveSpanProcessor().shutdown();
+  // Make sure to load any modules you use after otel is started so that it
+  // has its module loading hooks in place. In general, this is the right place
+  // to require your code.
+  require('./server-main.js').startServer();
 });
 ```
 
+### Customization
+
+While the built-in automatic instrumentation will provide good coverage for many
+users, there are scenarios where users may want to write custom instrumentation,
+or enrich the existing telemetry. Below are links to some resources about the
+OpenTelemetry API and some examples of its usage:
+
+- [OpenTelemetry JS Tracing API][otel-js-tracing-api]
+- [OpenTelemetry JS Examples][otel-js-examples]
+
 ### Configuration Options
 
-| Config Option      | Env Variable                       | Required | Default                                        |
-| ------------------ | ---------------------------------- | -------- | ---------------------------------------------- |
-| serviceName        | LS_SERVICE_NAME                    | y        | -                                              |
-| serviceVersion     | LS_SERVICE_VERSION                 | n        | unknown                                        |
-| spanEndpoint       | OTEL_EXPORTER_OTLP_SPAN_ENDPOINT   | n        | https://ingest.lightstep.com/traces/otlp/v0.6  |
-| accessToken        | LS_ACCESS_TOKEN                    | n        | -                                              |
-| logLevel           | OTEL_LOG_LEVEL                     | n        | info                                           |
-| propagators        | OTEL_PROPAGATORS                   | n        | b3                                             |
-| resource           | OTEL_RESOURCE_ATTRIBUTES           | n        | -                                              |
+| Config Option  | Env Variable                     | Required | Default                                       |
+| -------------- | -------------------------------- | -------- | --------------------------------------------- |
+| serviceName    | LS_SERVICE_NAME                  | y        | -                                             |
+| serviceVersion | LS_SERVICE_VERSION               | n        | unknown                                       |
+| spanEndpoint   | OTEL_EXPORTER_OTLP_SPAN_ENDPOINT | n        | https://ingest.lightstep.com/traces/otlp/v0.6 |
+| accessToken    | LS_ACCESS_TOKEN                  | n        | -                                             |
+| logLevel       | OTEL_LOG_LEVEL                   | n        | info                                          |
+| propagators    | OTEL_PROPAGATORS                 | n        | b3                                            |
+| resource       | OTEL_RESOURCE_ATTRIBUTES         | n        | -                                             |
 
 #### Additional Options
 
@@ -69,3 +78,6 @@ Start using it today in [Go](https://github.com/lightstep/otel-launcher-go), [Ja
 ---
 
 _Made with_ ![:heart:](https://a.slack-edge.com/production-standard-emoji-assets/10.2/apple-medium/2764-fe0f.png) _@ [Lightstep](http://lightstep.com/)_
+
+[otel-js-tracing-api]: https://github.com/open-telemetry/opentelemetry-js-api/blob/main/docs/tracing.md
+[otel-js-examples]: https://github.com/open-telemetry/opentelemetry-js/tree/main/examples
