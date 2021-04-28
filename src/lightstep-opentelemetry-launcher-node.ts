@@ -23,6 +23,8 @@ import {
 
 import * as os from 'os';
 
+import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
+
 const PROPAGATION_FORMATS: { [key: string]: types.PropagationFormat } = {
   B3: 'b3',
   B3SINGLE: 'b3single',
@@ -70,6 +72,7 @@ export function configureOpenTelemetry(
   configureBaseResource(config);
   configurePropagation(config);
   configureTraceExporter(config);
+  configureInstrumentations(config);
 
   return new NodeSDK(config);
 }
@@ -236,6 +239,20 @@ function configureBaseResource(
   } else {
     config.resource = baseResource;
   }
+}
+
+/**
+ * Configures instrumentations
+ * @param config
+ */
+function configureInstrumentations(
+  config: Partial<types.LightstepNodeSDKConfiguration>
+) {
+  if (config.instrumentations) {
+    return;
+  }
+
+  config.instrumentations = [getNodeAutoInstrumentations()];
 }
 
 /**
