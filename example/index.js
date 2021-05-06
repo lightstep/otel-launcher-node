@@ -1,5 +1,5 @@
 'use strict';
-const { diag, DiagConsoleLogger, DiagLogLevel } = require('@opentelemetry/api');
+const { DiagLogLevel } = require('@opentelemetry/api');
 const { lightstep, opentelemetry } = require('../build/src/index');
 
 // set access token or use LS_ACCESS_TOKEN environment variable
@@ -9,8 +9,7 @@ const sdk = lightstep.configureOpenTelemetry({
   accessToken,
   serviceName: 'locl-ex',
   metricInterval: 3000,
-  // logLevel: DiagLogLevel.ALL,
-  // metricsHostEnabled: false,
+  logLevel: DiagLogLevel.ALL,
 });
 
 sdk.start().then(() => {
