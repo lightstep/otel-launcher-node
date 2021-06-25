@@ -1,7 +1,7 @@
 import {
   CompositePropagator,
-  HttpBaggage,
-  HttpTraceContext,
+  HttpBaggagePropagator,
+  HttpTraceContextPropagator,
 } from '@opentelemetry/core';
 import {
   TextMapPropagator,
@@ -14,12 +14,8 @@ import { B3InjectEncoding, B3Propagator } from '@opentelemetry/propagator-b3';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as types from './types';
 import { CollectorTraceExporter } from '@opentelemetry/exporter-collector';
-import {
-  HOST_RESOURCE,
-  Resource,
-  ResourceAttributes,
-  SERVICE_RESOURCE,
-} from '@opentelemetry/resources';
+import { ResourceAttributes as ResourceAttributesSC } from '@opentelemetry/semantic-conventions';
+import { Resource, ResourceAttributes } from '@opentelemetry/resources';
 
 import * as os from 'os';
 
@@ -36,13 +32,13 @@ const PROPAGATION_FORMATS: { [key: string]: types.PropagationFormat } = {
 const PROPAGATOR_LOOKUP_MAP: {
   [key: string]:
     | typeof B3Propagator
-    | typeof HttpTraceContext
-    | typeof HttpBaggage;
+    | typeof HttpTraceContextPropagator
+    | typeof HttpBaggagePropagator;
 } = {
   b3: B3Propagator,
   b3single: B3Propagator,
-  tracecontext: HttpTraceContext,
-  baggage: HttpBaggage,
+  tracecontext: HttpTraceContextPropagator,
+  baggage: HttpBaggagePropagator,
 };
 
 /** Default values for LightstepNodeSDKConfiguration */
@@ -115,7 +111,8 @@ function setupLogger(
 function coalesceConfig(
   config: Partial<types.LightstepNodeSDKConfiguration>
 ): Partial<types.LightstepNodeSDKConfiguration> {
-  const envConfig: Partial<types.LightstepNodeSDKConfiguration> = configFromEnvironment();
+  const envConfig: Partial<types.LightstepNodeSDKConfiguration> =
+    configFromEnvironment();
   const mergedConfig: Partial<types.LightstepNodeSDKConfiguration> = {
     ...LS_DEFAULTS,
     ...envConfig,
@@ -224,13 +221,14 @@ function configureBaseResource(
   config: Partial<types.LightstepNodeSDKConfiguration>
 ) {
   const attributes: ResourceAttributes = {
-    [SERVICE_RESOURCE.NAME]: config.serviceName!,
+    [ResourceAttributesSC.SERVICE_NAME]: config.serviceName!,
   };
   if (config.serviceVersion) {
-    attributes[SERVICE_RESOURCE.VERSION] = config.serviceVersion;
+    attributes[ResourceAttributesSC.SERVICE_VERSION] = config.serviceVersion;
   }
 
-  attributes[HOST_RESOURCE.NAME] = process.env.HOSTNAME || os.hostname();
+  attributes[ResourceAttributesSC.HOST_NAME] =
+    process.env.HOSTNAME || os.hostname();
 
   const baseResource: Resource = new Resource(attributes);
 
@@ -272,7 +270,6 @@ function configureTraceExporter(
   }
 
   config.traceExporter = new CollectorTraceExporter({
-    serviceName: config.serviceName,
     url: config.spanEndpoint,
     headers,
   });

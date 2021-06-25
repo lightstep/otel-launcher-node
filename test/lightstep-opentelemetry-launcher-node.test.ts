@@ -1,23 +1,27 @@
+import { context, DiagLogLevel, propagation, trace } from '@opentelemetry/api';
+import {
+  CompositePropagator,
+  HttpTraceContextPropagator,
+} from '@opentelemetry/core';
+import { NodeTracerProvider } from '@opentelemetry/node';
 import { B3Propagator } from '@opentelemetry/propagator-b3';
+import { Resource } from '@opentelemetry/resources';
+import { NodeSDK } from '@opentelemetry/sdk-node';
+import { ResourceAttributes as ResourceAttributesSC } from '@opentelemetry/semantic-conventions';
 import * as assert from 'assert';
+import * as os from 'os';
 import * as sinon from 'sinon';
 import { lightstep, LightstepConfigurationError, LightstepEnv } from '../src';
-import { NodeSDK } from '@opentelemetry/sdk-node';
-import { trace, context, propagation } from '@opentelemetry/api';
-import { CompositePropagator, HttpTraceContext } from '@opentelemetry/core';
-import {
-  HOST_RESOURCE,
-  SERVICE_RESOURCE,
-  Resource,
-} from '@opentelemetry/resources';
-import { NodeTracerProvider } from '@opentelemetry/node';
-import * as os from 'os';
 
 describe('Lightstep OpenTelemetry Launcher Node', () => {
   describe('configureSDK', () => {
     const accessToken = 'x'.repeat(32);
     const serviceName = 'test-service';
-    const minimalConfig = { accessToken, serviceName };
+    const minimalConfig = {
+      accessToken,
+      serviceName,
+      logLevel: DiagLogLevel.NONE,
+    };
 
     beforeEach(() => {
       Object.keys(process.env as LightstepEnv).forEach(
@@ -32,6 +36,7 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
     describe('minimal configuration', () => {
       it('should require access token and serviceName', () => {
         const sdk = lightstep.configureOpenTelemetry({
+          logLevel: DiagLogLevel.NONE,
           accessToken,
           serviceName,
         });
@@ -42,7 +47,11 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
     describe('service name', () => {
       it('is required', () => {
         assert.throws(
-          () => lightstep.configureOpenTelemetry({ accessToken }),
+          () =>
+            lightstep.configureOpenTelemetry({
+              accessToken,
+              logLevel: DiagLogLevel.NONE,
+            }),
           err => {
             assert(err instanceof LightstepConfigurationError);
             assert.match(
@@ -56,22 +65,26 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
 
       it('should be settable by environment', () => {
         process.env.LS_SERVICE_NAME = 'test-service';
-        const sdk = lightstep.configureOpenTelemetry({ accessToken });
+        const sdk = lightstep.configureOpenTelemetry({
+          accessToken,
+          logLevel: DiagLogLevel.NONE,
+        });
         assert.ok(sdk instanceof NodeSDK);
       });
 
       it('is added to the resource', async () => {
         const sdk = lightstep.configureOpenTelemetry({
+          logLevel: DiagLogLevel.NONE,
           accessToken,
           serviceName,
         });
         assert.ok(sdk instanceof NodeSDK);
         await sdk.start();
-        const tracer = (trace.getTracerProvider() as NodeTracerProvider).getTracer(
-          'test'
-        );
+        const tracer = (
+          trace.getTracerProvider() as NodeTracerProvider
+        ).getTracer('test');
         assert.strictEqual(
-          tracer.resource.attributes[SERVICE_RESOURCE.NAME],
+          tracer.resource.attributes[ResourceAttributesSC.SERVICE_NAME],
           serviceName
         );
       });
@@ -80,7 +93,11 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
     describe('access token', () => {
       it('is required for prod', () => {
         assert.throws(
-          () => lightstep.configureOpenTelemetry({ serviceName }),
+          () =>
+            lightstep.configureOpenTelemetry({
+              serviceName,
+              logLevel: DiagLogLevel.NONE,
+            }),
           err => {
             assert(err instanceof LightstepConfigurationError);
             assert.match(
@@ -94,6 +111,7 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
 
       it('is not required for custom sat', () => {
         const sdk = lightstep.configureOpenTelemetry({
+          logLevel: DiagLogLevel.NONE,
           serviceName,
           spanEndpoint: 'http://localhost:8360',
         });
@@ -103,7 +121,10 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
 
       it('should be settable by environment', () => {
         process.env.LS_ACCESS_TOKEN = accessToken;
-        const sdk = lightstep.configureOpenTelemetry({ serviceName });
+        const sdk = lightstep.configureOpenTelemetry({
+          serviceName,
+          logLevel: DiagLogLevel.NONE,
+        });
         assert.ok(sdk instanceof NodeSDK);
       });
     });
@@ -112,6 +133,7 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
       it('is added to the resource', async () => {
         const serviceVersion = '0.0.1';
         const sdk = lightstep.configureOpenTelemetry({
+          logLevel: DiagLogLevel.NONE,
           accessToken,
           serviceName,
           serviceVersion,
@@ -119,11 +141,11 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
         assert.ok(sdk instanceof NodeSDK);
 
         await sdk.start();
-        const tracer = (trace.getTracerProvider() as NodeTracerProvider).getTracer(
-          'test'
-        );
+        const tracer = (
+          trace.getTracerProvider() as NodeTracerProvider
+        ).getTracer('test');
         assert.strictEqual(
-          tracer.resource.attributes[SERVICE_RESOURCE.VERSION],
+          tracer.resource.attributes[ResourceAttributesSC.SERVICE_VERSION],
           serviceVersion
         );
       });
@@ -148,19 +170,19 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
 
         await sdk.start();
 
-        const tracer = (trace.getTracerProvider() as NodeTracerProvider).getTracer(
-          'test'
-        );
+        const tracer = (
+          trace.getTracerProvider() as NodeTracerProvider
+        ).getTracer('test');
 
         assert.strictEqual(
-          tracer.resource.attributes[HOST_RESOURCE.NAME],
+          tracer.resource.attributes[ResourceAttributesSC.HOST_NAME],
           stubbedHostname
         );
       });
 
       it('is set to user-provided host name, if provided', async () => {
         const resource = new Resource({
-          [HOST_RESOURCE.NAME]: 'customhost.local',
+          [ResourceAttributesSC.HOST_NAME]: 'customhost.local',
         });
         const sdk = lightstep.configureOpenTelemetry({
           ...minimalConfig,
@@ -170,12 +192,12 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
 
         await sdk.start();
 
-        const tracer = (trace.getTracerProvider() as NodeTracerProvider).getTracer(
-          'test'
-        );
+        const tracer = (
+          trace.getTracerProvider() as NodeTracerProvider
+        ).getTracer('test');
 
         assert.strictEqual(
-          tracer.resource.attributes[HOST_RESOURCE.NAME],
+          tracer.resource.attributes[ResourceAttributesSC.HOST_NAME],
           'customhost.local'
         );
       });
@@ -188,12 +210,12 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
 
         await sdk.start();
 
-        const tracer = (trace.getTracerProvider() as NodeTracerProvider).getTracer(
-          'test'
-        );
+        const tracer = (
+          trace.getTracerProvider() as NodeTracerProvider
+        ).getTracer('test');
 
         assert.strictEqual(
-          tracer.resource.attributes[HOST_RESOURCE.NAME],
+          tracer.resource.attributes[ResourceAttributesSC.HOST_NAME],
           'envhost.local'
         );
       });
@@ -211,6 +233,7 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
 
       it('can be assigned using a comma delimited string', async () => {
         const sdk = lightstep.configureOpenTelemetry({
+          logLevel: DiagLogLevel.NONE,
           accessToken,
           serviceName,
           propagators: 'b3,tracecontext',
@@ -222,11 +245,12 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
 
         const [b3, tc] = propagator['_propagators'];
         assert.ok(b3 instanceof B3Propagator);
-        assert.ok(tc instanceof HttpTraceContext);
+        assert.ok(tc instanceof HttpTraceContextPropagator);
       });
 
       it('can be assigned using a comma delimited string', async () => {
         const sdk = lightstep.configureOpenTelemetry({
+          logLevel: DiagLogLevel.NONE,
           accessToken,
           serviceName,
           propagators: 'b3single,tracecontext',
@@ -238,7 +262,7 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
 
         const [b3, tc] = propagator['_propagators'];
         assert.ok(b3 instanceof B3Propagator);
-        assert.ok(tc instanceof HttpTraceContext);
+        assert.ok(tc instanceof HttpTraceContextPropagator);
       });
 
       it('can be assigned using a comma delimited string from environment', async () => {
@@ -251,7 +275,7 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
 
         const [b3, tc] = propagator['_propagators'];
         assert.ok(b3 instanceof B3Propagator);
-        assert.ok(tc instanceof HttpTraceContext);
+        assert.ok(tc instanceof HttpTraceContextPropagator);
       });
 
       it('raises exception for unknown propagator string', async () => {
@@ -259,6 +283,7 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
         await assert.rejects(
           async () => {
             const sdk = lightstep.configureOpenTelemetry({
+              logLevel: DiagLogLevel.NONE,
               accessToken,
               serviceName,
               propagators: 'b3,foo',
@@ -278,7 +303,7 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
       });
 
       it('does not override user provided propagator', async () => {
-        const propagator = new HttpTraceContext();
+        const propagator = new HttpTraceContextPropagator();
         const sdk = lightstep.configureOpenTelemetry({
           ...minimalConfig,
           textMapPropagator: propagator,
