@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.18.0
+
+* Opentelemetry dependencies have been upgraded to API v1.0.1, core v0.23.0
+  and contrib v0.23.0.
+
+## 0.17.0
+
+* Opentelemetry dependencies have been upgraded to API v1.0.0, core v0.22.0
+  and contrib v0.22.0.
+
 ## 0.16.0
 
 * Opentelemetry dependencies have been upgraded to API v1.0.0-rc.0, core v0.19.0
