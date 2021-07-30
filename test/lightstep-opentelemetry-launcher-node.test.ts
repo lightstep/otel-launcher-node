@@ -7,7 +7,7 @@ import { NodeTracerProvider } from '@opentelemetry/node';
 import { B3Propagator } from '@opentelemetry/propagator-b3';
 import { Resource } from '@opentelemetry/resources';
 import { NodeSDK } from '@opentelemetry/sdk-node';
-import { ResourceAttributes as ResourceAttributesSC } from '@opentelemetry/semantic-conventions';
+import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import * as assert from 'assert';
 import * as os from 'os';
 import * as sinon from 'sinon';
@@ -84,7 +84,7 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
           trace.getTracerProvider() as NodeTracerProvider
         ).getTracer('test');
         assert.strictEqual(
-          tracer.resource.attributes[ResourceAttributesSC.SERVICE_NAME],
+          tracer.resource.attributes[SemanticResourceAttributes.SERVICE_NAME],
           serviceName
         );
       });
@@ -145,7 +145,9 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
           trace.getTracerProvider() as NodeTracerProvider
         ).getTracer('test');
         assert.strictEqual(
-          tracer.resource.attributes[ResourceAttributesSC.SERVICE_VERSION],
+          tracer.resource.attributes[
+            SemanticResourceAttributes.SERVICE_VERSION
+          ],
           serviceVersion
         );
       });
@@ -175,14 +177,14 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
         ).getTracer('test');
 
         assert.strictEqual(
-          tracer.resource.attributes[ResourceAttributesSC.HOST_NAME],
+          tracer.resource.attributes[SemanticResourceAttributes.HOST_NAME],
           stubbedHostname
         );
       });
 
       it('is set to user-provided host name, if provided', async () => {
         const resource = new Resource({
-          [ResourceAttributesSC.HOST_NAME]: 'customhost.local',
+          [SemanticResourceAttributes.HOST_NAME]: 'customhost.local',
         });
         const sdk = lightstep.configureOpenTelemetry({
           ...minimalConfig,
@@ -197,7 +199,7 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
         ).getTracer('test');
 
         assert.strictEqual(
-          tracer.resource.attributes[ResourceAttributesSC.HOST_NAME],
+          tracer.resource.attributes[SemanticResourceAttributes.HOST_NAME],
           'customhost.local'
         );
       });
@@ -215,7 +217,7 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
         ).getTracer('test');
 
         assert.strictEqual(
-          tracer.resource.attributes[ResourceAttributesSC.HOST_NAME],
+          tracer.resource.attributes[SemanticResourceAttributes.HOST_NAME],
           'envhost.local'
         );
       });
