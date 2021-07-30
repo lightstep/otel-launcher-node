@@ -14,7 +14,7 @@ import { B3InjectEncoding, B3Propagator } from '@opentelemetry/propagator-b3';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as types from './types';
 import { CollectorTraceExporter } from '@opentelemetry/exporter-collector';
-import { ResourceAttributes as ResourceAttributesSC } from '@opentelemetry/semantic-conventions';
+import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import { Resource, ResourceAttributes } from '@opentelemetry/resources';
 
 import * as os from 'os';
@@ -221,13 +221,14 @@ function configureBaseResource(
   config: Partial<types.LightstepNodeSDKConfiguration>
 ) {
   const attributes: ResourceAttributes = {
-    [ResourceAttributesSC.SERVICE_NAME]: config.serviceName!,
+    [SemanticResourceAttributes.SERVICE_NAME]: config.serviceName!,
   };
   if (config.serviceVersion) {
-    attributes[ResourceAttributesSC.SERVICE_VERSION] = config.serviceVersion;
+    attributes[SemanticResourceAttributes.SERVICE_VERSION] =
+      config.serviceVersion;
   }
 
-  attributes[ResourceAttributesSC.HOST_NAME] =
+  attributes[SemanticResourceAttributes.HOST_NAME] =
     process.env.HOSTNAME || os.hostname();
 
   const baseResource: Resource = new Resource(attributes);

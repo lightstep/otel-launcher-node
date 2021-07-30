@@ -8,6 +8,7 @@ release:
 		echo "Current git branch does not appear to be 'master'. Refusing to publish."; exit 1; \
 	fi
 	npm version $(RELEASE_TYPE)
+	npm run compile
 	npm run release:prepare
 	@echo
 	@echo "Version and tag created. The publish will be done automatically from circleCI."
