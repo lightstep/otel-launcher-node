@@ -1,12 +1,14 @@
 import { context, DiagLogLevel, propagation, trace } from '@opentelemetry/api';
 import {
   CompositePropagator,
-  HttpTraceContextPropagator,
+  W3CTraceContextPropagator,
 } from '@opentelemetry/core';
-import { NodeTracerProvider } from '@opentelemetry/node';
+import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 import { B3Propagator } from '@opentelemetry/propagator-b3';
 import { Resource } from '@opentelemetry/resources';
-import { NodeSDK } from '@opentelemetry/sdk-node';
+import { NodeSDK } from '../src/sdk';
+// not released
+// import { NodeSDK } from '@opentelemetry/sdk-node';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import * as assert from 'assert';
 import * as os from 'os';
@@ -247,7 +249,7 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
 
         const [b3, tc] = propagator['_propagators'];
         assert.ok(b3 instanceof B3Propagator);
-        assert.ok(tc instanceof HttpTraceContextPropagator);
+        assert.ok(tc instanceof W3CTraceContextPropagator);
       });
 
       it('can be assigned using a comma delimited string', async () => {
@@ -264,7 +266,7 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
 
         const [b3, tc] = propagator['_propagators'];
         assert.ok(b3 instanceof B3Propagator);
-        assert.ok(tc instanceof HttpTraceContextPropagator);
+        assert.ok(tc instanceof W3CTraceContextPropagator);
       });
 
       it('can be assigned using a comma delimited string from environment', async () => {
@@ -277,7 +279,7 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
 
         const [b3, tc] = propagator['_propagators'];
         assert.ok(b3 instanceof B3Propagator);
-        assert.ok(tc instanceof HttpTraceContextPropagator);
+        assert.ok(tc instanceof W3CTraceContextPropagator);
       });
 
       it('raises exception for unknown propagator string', async () => {
@@ -305,7 +307,7 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
       });
 
       it('does not override user provided propagator', async () => {
-        const propagator = new HttpTraceContextPropagator();
+        const propagator = new W3CTraceContextPropagator();
         const sdk = lightstep.configureOpenTelemetry({
           ...minimalConfig,
           textMapPropagator: propagator,

@@ -1,7 +1,7 @@
 import {
   CompositePropagator,
-  HttpBaggagePropagator,
-  HttpTraceContextPropagator,
+  W3CBaggagePropagator,
+  W3CTraceContextPropagator,
 } from '@opentelemetry/core';
 import {
   TextMapPropagator,
@@ -11,9 +11,11 @@ import {
   DiagConsoleLogger,
 } from '@opentelemetry/api';
 import { B3InjectEncoding, B3Propagator } from '@opentelemetry/propagator-b3';
-import { NodeSDK } from '@opentelemetry/sdk-node';
+import { NodeSDK } from './sdk/sdk';
+// not released
+// import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as types from './types';
-import { CollectorTraceExporter } from '@opentelemetry/exporter-collector';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-otlp-http';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import { Resource, ResourceAttributes } from '@opentelemetry/resources';
 
@@ -32,13 +34,13 @@ const PROPAGATION_FORMATS: { [key: string]: types.PropagationFormat } = {
 const PROPAGATOR_LOOKUP_MAP: {
   [key: string]:
     | typeof B3Propagator
-    | typeof HttpTraceContextPropagator
-    | typeof HttpBaggagePropagator;
+    | typeof W3CTraceContextPropagator
+    | typeof W3CBaggagePropagator;
 } = {
   b3: B3Propagator,
   b3single: B3Propagator,
-  tracecontext: HttpTraceContextPropagator,
-  baggage: HttpBaggagePropagator,
+  tracecontext: W3CTraceContextPropagator,
+  baggage: W3CBaggagePropagator,
 };
 
 /** Default values for LightstepNodeSDKConfiguration */
@@ -270,7 +272,7 @@ function configureTraceExporter(
     headers[ACCESS_TOKEN_HEADER] = config.accessToken;
   }
 
-  config.traceExporter = new CollectorTraceExporter({
+  config.traceExporter = new OTLPTraceExporter({
     url: config.spanEndpoint,
     headers,
   });
