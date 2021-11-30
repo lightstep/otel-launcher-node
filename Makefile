@@ -11,5 +11,5 @@ release:
 	npm run compile
 	npm run release:prepare
 	@echo
-	@echo "Version and tag created. The publish will be done automatically from circleCI."
+	@echo "Version and tag created. The publish will be done automatically from CI."
 	@echo
