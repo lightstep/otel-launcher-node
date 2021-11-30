@@ -17,4 +17,4 @@ To make a release, do these steps
 - Updates the package version based on the `RELEASE_TYPE` and commits the change
 - Creates a tag for the newly created version
 - Pushes the version bump commit and new tag to upstream
-- The tag triggers a build and release from CircleCI to NPM
+- The tag triggers a build and release from CI to NPM
