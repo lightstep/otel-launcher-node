@@ -19,7 +19,7 @@ if [ "$upstreamExists" != "" ]; then
 fi
 git remote add upstream_tmp_release git@github.com:lightstep/otel-launcher-node.git
 
-git push --set-upstream upstream_tmp_release master
+git push --set-upstream upstream_tmp_release main
 git push upstream_tmp_release "v$checkNpm"
 
 git remote remove upstream_tmp_release

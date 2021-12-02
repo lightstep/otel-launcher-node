@@ -61,7 +61,7 @@ OpenTelemetry API and some examples of its usage:
 
 In addition the options below, the `configureOpenTelemetry` function will take any configuration
 options supported by the OpenTelemetry Node SDK package and its return value is a NodeSDK instance.
-See the [OpenTelemetry Node SDK documentation](https://github.com/open-telemetry/opentelemetry-js/tree/master/packages/opentelemetry-sdk-node) for more details.
+See the [OpenTelemetry Node SDK documentation](https://github.com/open-telemetry/opentelemetry-js/tree/main/packages/opentelemetry-sdk-trace-node) for more details.
 
 ### Principles behind Launcher
 
