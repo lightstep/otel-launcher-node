@@ -1,6 +1,6 @@
 # Releasing
 
-Once all the changes for a release have been merged to master, ensure the following:
+Once all the changes for a release have been merged to main, ensure the following:
 
 - [ ] tests are passing
 - [ ] user facing documentation has been updated
@@ -9,7 +9,7 @@ Once all the changes for a release have been merged to master, ensure the follow
 
 To make a release, do these steps
 
-1. Open a PR to update the CHANGELOG and then merge to master
+1. Open a PR to update the CHANGELOG and then merge to main
 1. Run `make release RELEASE_TYPE=major|minor|patch`
 
 `make release` does the following:
