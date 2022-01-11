@@ -15,7 +15,7 @@ import { NodeSDK } from './sdk/sdk';
 // not released
 // import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as types from './types';
-import { OTLPTraceExporter } from '@opentelemetry/exporter-otlp-http';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import { Resource, ResourceAttributes } from '@opentelemetry/resources';
 
@@ -33,9 +33,9 @@ const PROPAGATION_FORMATS: { [key: string]: types.PropagationFormat } = {
 /** Map of propagation format to class implementing the format */
 const PROPAGATOR_LOOKUP_MAP: {
   [key: string]:
-    | typeof B3Propagator
-    | typeof W3CTraceContextPropagator
-    | typeof W3CBaggagePropagator;
+  | typeof B3Propagator
+  | typeof W3CTraceContextPropagator
+  | typeof W3CBaggagePropagator;
 } = {
   b3: B3Propagator,
   b3single: B3Propagator,
@@ -97,7 +97,7 @@ function setupLogger(
   } else if (process.env.OTEL_LOG_LEVEL) {
     logLevel =
       DiagLogLevel[
-        process.env.OTEL_LOG_LEVEL.toUpperCase() as keyof typeof DiagLogLevel
+      process.env.OTEL_LOG_LEVEL.toUpperCase() as keyof typeof DiagLogLevel
       ];
   } else {
     logLevel = DiagLogLevel.INFO;
