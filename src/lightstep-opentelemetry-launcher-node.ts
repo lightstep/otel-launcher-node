@@ -15,7 +15,7 @@ import { NodeSDK } from './sdk/sdk';
 // not released
 // import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as types from './types';
-import { OTLPTraceExporter } from '@opentelemetry/exporter-otlp-http';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import { Resource, ResourceAttributes } from '@opentelemetry/resources';
 
