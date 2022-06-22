@@ -1,5 +1,5 @@
 import { DiagLogger, DiagLogLevel } from '@opentelemetry/api';
-import { NodeSDKConfiguration } from '../src/sdk';
+import { NodeSDKConfiguration } from '@opentelemetry/sdk-node';
 // not released
 // import { NodeSDKConfiguration } from '@opentelemetry/sdk-node';
 

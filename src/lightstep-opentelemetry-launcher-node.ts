@@ -11,7 +11,7 @@ import {
   DiagConsoleLogger,
 } from '@opentelemetry/api';
 import { B3InjectEncoding, B3Propagator } from '@opentelemetry/propagator-b3';
-import { NodeSDK } from './sdk/sdk';
+import { NodeSDK } from '@opentelemetry/sdk-node';
 // not released
 // import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as types from './types';
