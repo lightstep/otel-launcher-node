@@ -145,7 +145,7 @@ function logConfig(
  * keys using lightstep conventions
  */
 function configFromEnvironment(): Partial<types.LightstepNodeSDKConfiguration> {
-  const env: types.LightstepEnv = process.env;
+  const env: types.LightstepEnv = process.env as types.LightstepEnv;
   const envConfig: Partial<types.LightstepNodeSDKConfiguration> = {};
   if (env.LS_ACCESS_TOKEN) envConfig.accessToken = env.LS_ACCESS_TOKEN;
   if (env.LS_SERVICE_NAME) envConfig.serviceName = env.LS_SERVICE_NAME;
