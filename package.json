@@ -47,19 +47,19 @@
   },
   "dependencies": {
     "@opentelemetry/api": "^1.2.0",
-    "@opentelemetry/api-metrics": "^0.32.0",
-    "@opentelemetry/auto-instrumentations-node": "~0.32.0",
-    "@opentelemetry/core": "~1.6.0",
-    "@opentelemetry/exporter-trace-otlp-http": "~0.32.0",
-    "@opentelemetry/propagator-b3": "~1.6.0",
+    "@opentelemetry/api-metrics": "^0.33.0",
+    "@opentelemetry/auto-instrumentations-node": "~0.33.1",
+    "@opentelemetry/core": "~1.7.0",
+    "@opentelemetry/exporter-trace-otlp-http": "~0.33.0",
+    "@opentelemetry/propagator-b3": "~1.7.0",
     "@opentelemetry/resource-detector-aws": "~1.1.2",
     "@opentelemetry/resource-detector-gcp": "~0.27.2",
-    "@opentelemetry/resources": "~1.6.0",
-    "@opentelemetry/sdk-metrics": "~0.32.0",
-    "@opentelemetry/sdk-node": "^0.32.0",
-    "@opentelemetry/sdk-trace-base": "~1.6.0",
-    "@opentelemetry/sdk-trace-node": "~1.6.0",
-    "@opentelemetry/semantic-conventions": "~1.6.0"
+    "@opentelemetry/resources": "~1.7.0",
+    "@opentelemetry/sdk-metrics": "~0.33.0",
+    "@opentelemetry/sdk-node": "^0.33.0",
+    "@opentelemetry/sdk-trace-base": "~1.7.0",
+    "@opentelemetry/sdk-trace-node": "~1.7.0",
+    "@opentelemetry/semantic-conventions": "~1.7.0"
   },
   "devDependencies": {
     "@types/mocha": "9.1.1",
@@ -67,21 +67,18 @@
     "@types/sinon": "^10.0.13",
     "aws-sdk": "^2.1159.0",
     "codecov": "3.8.1",
+    "dataloader": "^2.1.0",
     "eslint": "7.32.0",
     "eslint-config-airbnb-base": "15.0.0",
     "eslint-plugin-header": "3.1.1",
     "eslint-plugin-import": "2.25.3",
     "gts": "3.1.1",
     "mocha": "10.0.0",
+    "mongoose": "^6.6.4",
     "nyc": "15.1.0",
     "package-json": "^8.1.0",
     "sinon": "^14.0.0",
     "ts-mocha": "10.0.0",
     "typescript": "^4.4.4"
-  },
-  "overrides": {
-    "package-json": {
-      "got": "12.3.1"
-    }
   }
 }
