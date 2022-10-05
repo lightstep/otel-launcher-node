@@ -12,8 +12,11 @@ All notable changes to this project will be documented in this file.
   format from OTLP/JSON to OTLP/proto.
 * OpenTelemetry dependencies have been updated to the latest available: API v1.2.0,
   core v1.7.0 and instrumentations v0.33.1.
+<<<<<<< HEAD
 * telemetry.distro.name and telemetry.distro.version are now recorded as resource
   attributes.
+=======
+>>>>>>> 9b381f2 (chore: update docs for v1.1.0 release)
 
 ## 1.0.0
 
