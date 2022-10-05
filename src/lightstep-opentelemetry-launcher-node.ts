@@ -43,7 +43,7 @@ const PROPAGATOR_LOOKUP_MAP: {
 
 /** Default values for LightstepNodeSDKConfiguration */
 const LS_DEFAULTS: Partial<types.LightstepNodeSDKConfiguration> = {
-  spanEndpoint: 'https://ingest.lightstep.com/traces/otlp/v0.6',
+  spanEndpoint: 'https://ingest.lightstep.com/traces/otlp/v0.9',
   propagators: PROPAGATION_FORMATS.B3,
 };
 
