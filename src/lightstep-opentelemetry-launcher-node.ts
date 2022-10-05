@@ -14,7 +14,7 @@ import { B3InjectEncoding, B3Propagator } from '@opentelemetry/propagator-b3';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as types from './types';
 import { VERSION } from './version';
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import { Resource, ResourceAttributes } from '@opentelemetry/resources';
 
