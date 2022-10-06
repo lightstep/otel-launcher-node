@@ -13,6 +13,7 @@ import {
 import { B3InjectEncoding, B3Propagator } from '@opentelemetry/propagator-b3';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as types from './types';
+import { VERSION } from './version';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import { Resource, ResourceAttributes } from '@opentelemetry/resources';
@@ -48,6 +49,8 @@ const LS_DEFAULTS: Partial<types.LightstepNodeSDKConfiguration> = {
 };
 
 const ACCESS_TOKEN_HEADER = 'Lightstep-Access-Token';
+const TELEMETRY_DISTRO_NAME = 'telemetry.distro.name';
+const TELEMETRY_DISTRO_VERSION = 'telemetry.distro.version';
 
 let fail: types.FailureHandler;
 
@@ -222,6 +225,8 @@ function configureBaseResource(
 ) {
   const attributes: ResourceAttributes = {
     [SemanticResourceAttributes.SERVICE_NAME]: config.serviceName!,
+    [TELEMETRY_DISTRO_NAME]: 'lightstep',
+    [TELEMETRY_DISTRO_VERSION]: VERSION,
   };
   if (config.serviceVersion) {
     attributes[SemanticResourceAttributes.SERVICE_VERSION] =

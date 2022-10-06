@@ -12,6 +12,7 @@ import * as assert from 'assert';
 import * as os from 'os';
 import * as sinon from 'sinon';
 import { lightstep, LightstepConfigurationError, LightstepEnv } from '../src';
+import { VERSION } from '../src/version';
 
 describe('Lightstep OpenTelemetry Launcher Node', () => {
   describe('configureSDK', () => {
@@ -219,6 +220,35 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
         assert.strictEqual(
           tracer.resource.attributes[SemanticResourceAttributes.HOST_NAME],
           'envhost.local'
+        );
+      });
+    });
+
+    describe('telemetry.distro', async () => {
+      it('is added to the resource', async () => {
+        const sdk = lightstep.configureOpenTelemetry({
+          logLevel: DiagLogLevel.NONE,
+          accessToken,
+          serviceName,
+
+        });
+        assert.ok(sdk instanceof NodeSDK);
+
+        await sdk.start();
+        const tracer = (
+          trace.getTracerProvider() as NodeTracerProvider
+        ).getTracer('test');
+        assert.strictEqual(
+          tracer.resource.attributes[
+            'telemetry.distro.name'
+          ],
+          'lightstep'
+        );
+        assert.strictEqual(
+          tracer.resource.attributes[
+            'telemetry.distro.version'
+          ],
+          VERSION,
         );
       });
     });
