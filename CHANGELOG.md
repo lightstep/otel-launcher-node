@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 1.2.0
+* This release changes the default export format for launcher from OTLP/JSON to
+  OTLP/proto (e.g. proto over HTTP). Aside from the change in export format, this
+  release is identical to v1.1.0. Users wishing to use OTLP/JSON can use v1.1.0
+  and transition to a vanilla OpenTelemetry SDK setup moving forward.
+
 ## 1.1.0
 
 * This release requires microsatellite version 2022-10-03_20-16-42Z or later
@@ -12,11 +18,8 @@ All notable changes to this project will be documented in this file.
   format from OTLP/JSON to OTLP/proto.
 * OpenTelemetry dependencies have been updated to the latest available: API v1.2.0,
   core v1.7.0 and instrumentations v0.33.1.
-<<<<<<< HEAD
 * telemetry.distro.name and telemetry.distro.version are now recorded as resource
   attributes.
-=======
->>>>>>> 9b381f2 (chore: update docs for v1.1.0 release)
 
 ## 1.0.0
 
