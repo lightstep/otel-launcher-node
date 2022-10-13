@@ -49,7 +49,7 @@ OpenTelemetry API and some examples of its usage:
 | -------------- | -------------------------------- | -------- | --------------------------------------------- |
 | serviceName    | LS_SERVICE_NAME                  | y        | -                                             |
 | serviceVersion | LS_SERVICE_VERSION               | n        | unknown                                       |
-| spanEndpoint   | OTEL_EXPORTER_OTLP_SPAN_ENDPOINT | n        | https://ingest.lightstep.com/traces/otlp/v0.6 |
+| spanEndpoint   | OTEL_EXPORTER_OTLP_SPAN_ENDPOINT | n        | https://ingest.lightstep.com/traces/otlp/v0.9 |
 | accessToken    | LS_ACCESS_TOKEN                  | n        | -                                             |
 | logLevel       | OTEL_LOG_LEVEL                   | n        | info                                          |
 | propagators    | OTEL_PROPAGATORS                 | n        | b3                                            |
