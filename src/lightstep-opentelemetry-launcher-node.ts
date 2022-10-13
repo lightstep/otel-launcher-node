@@ -11,10 +11,9 @@ import {
   DiagConsoleLogger,
 } from '@opentelemetry/api';
 import { B3InjectEncoding, B3Propagator } from '@opentelemetry/propagator-b3';
-import { NodeSDK } from './sdk/sdk';
-// not released
-// import { NodeSDK } from '@opentelemetry/sdk-node';
+import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as types from './types';
+import { VERSION } from './version';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import { Resource, ResourceAttributes } from '@opentelemetry/resources';
@@ -45,11 +44,13 @@ const PROPAGATOR_LOOKUP_MAP: {
 
 /** Default values for LightstepNodeSDKConfiguration */
 const LS_DEFAULTS: Partial<types.LightstepNodeSDKConfiguration> = {
-  spanEndpoint: 'https://ingest.lightstep.com/traces/otlp/v0.6',
+  spanEndpoint: 'https://ingest.lightstep.com/traces/otlp/v0.9',
   propagators: PROPAGATION_FORMATS.B3,
 };
 
 const ACCESS_TOKEN_HEADER = 'Lightstep-Access-Token';
+const TELEMETRY_DISTRO_NAME = 'telemetry.distro.name';
+const TELEMETRY_DISTRO_VERSION = 'telemetry.distro.version';
 
 let fail: types.FailureHandler;
 
@@ -147,7 +148,7 @@ function logConfig(
  * keys using lightstep conventions
  */
 function configFromEnvironment(): Partial<types.LightstepNodeSDKConfiguration> {
-  const env: types.LightstepEnv = process.env;
+  const env: types.LightstepEnv = process.env as types.LightstepEnv;
   const envConfig: Partial<types.LightstepNodeSDKConfiguration> = {};
   if (env.LS_ACCESS_TOKEN) envConfig.accessToken = env.LS_ACCESS_TOKEN;
   if (env.LS_SERVICE_NAME) envConfig.serviceName = env.LS_SERVICE_NAME;
@@ -224,6 +225,8 @@ function configureBaseResource(
 ) {
   const attributes: ResourceAttributes = {
     [SemanticResourceAttributes.SERVICE_NAME]: config.serviceName!,
+    [TELEMETRY_DISTRO_NAME]: 'lightstep',
+    [TELEMETRY_DISTRO_VERSION]: VERSION,
   };
   if (config.serviceVersion) {
     attributes[SemanticResourceAttributes.SERVICE_VERSION] =
