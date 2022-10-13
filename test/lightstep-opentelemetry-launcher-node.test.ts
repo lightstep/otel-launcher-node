@@ -230,7 +230,6 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
           logLevel: DiagLogLevel.NONE,
           accessToken,
           serviceName,
-
         });
         assert.ok(sdk instanceof NodeSDK);
 
@@ -239,16 +238,12 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
           trace.getTracerProvider() as NodeTracerProvider
         ).getTracer('test');
         assert.strictEqual(
-          tracer.resource.attributes[
-            'telemetry.distro.name'
-          ],
+          tracer.resource.attributes['telemetry.distro.name'],
           'lightstep'
         );
         assert.strictEqual(
-          tracer.resource.attributes[
-            'telemetry.distro.version'
-          ],
-          VERSION,
+          tracer.resource.attributes['telemetry.distro.version'],
+          VERSION
         );
       });
     });
