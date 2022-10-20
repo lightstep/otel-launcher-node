@@ -50,7 +50,7 @@
     "@opentelemetry/api-metrics": "^0.33.0",
     "@opentelemetry/auto-instrumentations-node": "~0.33.1",
     "@opentelemetry/core": "~1.7.0",
-    "@opentelemetry/exporter-trace-otlp-http": "~0.33.0",
+    "@opentelemetry/exporter-trace-otlp-proto": "~0.33.0",
     "@opentelemetry/propagator-b3": "~1.7.0",
     "@opentelemetry/resource-detector-aws": "~1.1.2",
     "@opentelemetry/resource-detector-gcp": "~0.27.2",
