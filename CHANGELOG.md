@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 1.3.0
+* OpenTelemetry dependencies have been upgraded to API v1.3.0, core v1.8.0,
+  with auto-instrumentations-node v0.35.0.
+* Support for the recently GA'd metrics SDK has been added. This functionality
+  is opt-in and users will need to set `metricsEnabeld: true` in code, or via
+  the environment by setting `LS_METRICS_ENABLED=true`. Refer to the README
+  for all metrics related configuration options.
+
 ## 1.2.0
 * This release changes the default export format for launcher from OTLP/JSON to
   OTLP/proto (e.g. proto over HTTP). Aside from the change in export format, this
