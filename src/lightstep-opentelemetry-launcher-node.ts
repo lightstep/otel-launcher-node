@@ -14,6 +14,8 @@ import { B3InjectEncoding, B3Propagator } from '@opentelemetry/propagator-b3';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import * as types from './types';
 import { VERSION } from './version';
+import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
+import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-proto';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import { Resource, ResourceAttributes } from '@opentelemetry/resources';
@@ -45,6 +47,9 @@ const PROPAGATOR_LOOKUP_MAP: {
 /** Default values for LightstepNodeSDKConfiguration */
 const LS_DEFAULTS: Partial<types.LightstepNodeSDKConfiguration> = {
   spanEndpoint: 'https://ingest.lightstep.com/traces/otlp/v0.9',
+  metricsEndpoint: 'https://ingest.lightstep.com/metrics/otlp/v0.9',
+  metricsReportingPeriod: 30000,
+  metricsEnabled: false,
   propagators: PROPAGATION_FORMATS.B3,
 };
 
@@ -71,6 +76,7 @@ export function configureOpenTelemetry(
   configureBaseResource(config);
   configurePropagation(config);
   configureTraceExporter(config);
+  configureMetricExporter(config);
   configureInstrumentations(config);
 
   return new NodeSDK(config);
@@ -135,11 +141,8 @@ function logConfig(
   mergedConfig: Partial<types.LightstepNodeSDKConfiguration>
 ) {
   diag.debug('Default config: ', defaults);
-  diag.debug('Default config: ', defaults);
   diag.debug('Config from environment', envConfig);
-  diag.debug('Default config: ', defaults);
   diag.debug('Config from code: ', lsConfig);
-  diag.debug('Default config: ', defaults);
   diag.debug('Merged Config', mergedConfig);
 }
 
@@ -153,8 +156,19 @@ function configFromEnvironment(): Partial<types.LightstepNodeSDKConfiguration> {
   if (env.LS_ACCESS_TOKEN) envConfig.accessToken = env.LS_ACCESS_TOKEN;
   if (env.LS_SERVICE_NAME) envConfig.serviceName = env.LS_SERVICE_NAME;
   if (env.LS_SERVICE_VERSION) envConfig.serviceVersion = env.LS_SERVICE_VERSION;
+  // for backwards compatibility only, this has been renamed to `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`
   if (env.OTEL_EXPORTER_OTLP_SPAN_ENDPOINT)
     envConfig.spanEndpoint = env.OTEL_EXPORTER_OTLP_SPAN_ENDPOINT;
+  if (env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT)
+    envConfig.spanEndpoint = env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT;
+  if (env.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT)
+    envConfig.metricsEndpoint = env.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT;
+  if (env.OTEL_EXPORTER_OTLP_METRICS_PERIOD)
+    envConfig.metricsReportingPeriod = parseInt(
+      env.OTEL_EXPORTER_OTLP_METRICS_PERIOD
+    );
+  if (env.LS_METRICS_ENABLED)
+    envConfig.metricsEnabled = env.LS_METRICS_ENABLED === 'true';
   if (env.OTEL_PROPAGATORS) envConfig.propagators = env.OTEL_PROPAGATORS;
   return envConfig;
 }
@@ -260,7 +274,7 @@ function configureInstrumentations(
 }
 
 /**
- * Configures export as JSON over HTTP to the configured spanEndpoint
+ * Configures export as proto over HTTP to the configured spanEndpoint
  * @param config
  */
 function configureTraceExporter(
@@ -278,6 +292,33 @@ function configureTraceExporter(
   config.traceExporter = new OTLPTraceExporter({
     url: config.spanEndpoint,
     headers,
+  });
+}
+
+/**
+ * Configures export as proto over HTTP to the configured metricsEndpoint
+ * @param config
+ */
+function configureMetricExporter(
+  config: Partial<types.LightstepNodeSDKConfiguration>
+) {
+  if (!config.metricsEnabled || config.metricReader) {
+    return;
+  }
+
+  const headers: { [key: string]: string } = {};
+  if (config.accessToken) {
+    headers[ACCESS_TOKEN_HEADER] = config.accessToken;
+  }
+
+  const metricExporter = new OTLPMetricExporter({
+    url: config.metricsEndpoint,
+    headers,
+  });
+
+  config.metricReader = new PeriodicExportingMetricReader({
+    exporter: metricExporter,
+    exportIntervalMillis: config.metricsReportingPeriod,
   });
 }
 
