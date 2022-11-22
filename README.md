@@ -45,15 +45,18 @@ OpenTelemetry API and some examples of its usage:
 
 ### Configuration Options
 
-| Config Option  | Env Variable                     | Required | Default                                       |
-| -------------- | -------------------------------- | -------- | --------------------------------------------- |
-| serviceName    | LS_SERVICE_NAME                  | y        | -                                             |
-| serviceVersion | LS_SERVICE_VERSION               | n        | unknown                                       |
-| spanEndpoint   | OTEL_EXPORTER_OTLP_SPAN_ENDPOINT | n        | https://ingest.lightstep.com/traces/otlp/v0.9 |
-| accessToken    | LS_ACCESS_TOKEN                  | n        | -                                             |
-| logLevel       | OTEL_LOG_LEVEL                   | n        | info                                          |
-| propagators    | OTEL_PROPAGATORS                 | n        | b3                                            |
-| resource       | OTEL_RESOURCE_ATTRIBUTES         | n        | -                                             |
+| Config Option          | Env Variable                        | Required | Default                                        |
+| ---------------------- | ----------------------------------- | -------- | ---------------------------------------------- |
+| serviceName            | LS_SERVICE_NAME                     | y        | -                                              |
+| serviceVersion         | LS_SERVICE_VERSION                  | n        | unknown                                        |
+| spanEndpoint           | OTEL_EXPORTER_OTLP_TRACES_ENDPOINT  | n        | https://ingest.lightstep.com/traces/otlp/v0.9  |
+| metricsEndpoint        | OTEL_EXPORTER_OTLP_METRICS_ENDPOINT | n        | https://ingest.lightstep.com/metrics/otlp/v0.9 |
+| metricsReportingPeriod | OTEL_EXPORTER_OTLP_METRICS_PERIOD   | n        | 30000                                          |
+| metricsEnabled         | LS_METRICS_ENABLED                  | n        | false                                          |
+| accessToken            | LS_ACCESS_TOKEN                     | n        | -                                              |
+| logLevel               | OTEL_LOG_LEVEL                      | n        | info                                           |
+| propagators            | OTEL_PROPAGATORS                    | n        | b3                                             |
+| resource               | OTEL_RESOURCE_ATTRIBUTES            | n        | -                                              |
 
 #### Additional Options
 
