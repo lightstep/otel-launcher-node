@@ -79,6 +79,6 @@
     "package-json": "^7.0.0",
     "sinon": "^14.0.0",
     "ts-mocha": "10.0.0",
-    "typescript": "^4.4.4"
+    "typescript": "4.4.4"
   }
 }
