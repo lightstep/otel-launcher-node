@@ -9,6 +9,9 @@ export interface LightstepConfigType {
   serviceName?: string;
   serviceVersion?: string;
   spanEndpoint?: string;
+  metricsEndpoint?: string;
+  metricsReportingPeriod?: number;
+  metricsEnabled?: boolean;
   propagators?: string;
   logger?: DiagLogger;
   logLevel?: DiagLogLevel;
@@ -21,6 +24,10 @@ export interface LightstepEnvType {
   LS_SERVICE_NAME?: string;
   LS_SERVICE_VERSION?: string;
   OTEL_EXPORTER_OTLP_SPAN_ENDPOINT?: string;
+  OTEL_EXPORTER_OTLP_TRACES_ENDPOINT?: string;
+  OTEL_EXPORTER_OTLP_METRICS_ENDPOINT?: string;
+  OTEL_EXPORTER_OTLP_METRICS_PERIOD?: string;
+  LS_METRICS_ENABLED?: string;
   OTEL_PROPAGATORS?: string;
 }
 

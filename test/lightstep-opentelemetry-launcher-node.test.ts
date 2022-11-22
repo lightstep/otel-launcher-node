@@ -1,4 +1,11 @@
-import { context, DiagLogLevel, propagation, trace } from '@opentelemetry/api';
+import {
+  context,
+  DiagLogLevel,
+  propagation,
+  trace,
+  metrics,
+  createNoopMeter,
+} from '@opentelemetry/api';
 import {
   CompositePropagator,
   W3CTraceContextPropagator,
@@ -341,6 +348,43 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
           propagation['_getGlobalPropagator'](),
           propagator
         );
+      });
+    });
+
+    describe('metrics', () => {
+      const noopMeter = createNoopMeter();
+
+      it('is disabled by default', async () => {
+        const sdk = lightstep.configureOpenTelemetry(minimalConfig);
+        assert.ok(sdk instanceof NodeSDK);
+
+        await sdk.start();
+
+        assert.strictEqual(metrics.getMeter('test'), noopMeter);
+      });
+
+      it('can be enabled by code', async () => {
+        const sdk = lightstep.configureOpenTelemetry({
+          ...minimalConfig,
+          metricsEnabled: true,
+        });
+        assert.ok(sdk instanceof NodeSDK);
+
+        await sdk.start();
+
+        // a non-noop meter indicates the metrics sdk was configured
+        assert.notStrictEqual(metrics.getMeter('test'), noopMeter);
+      });
+
+      it('can be enabled by environment variable', async () => {
+        process.env.LS_METRICS_ENABLED = 'true';
+        const sdk = lightstep.configureOpenTelemetry(minimalConfig);
+        assert.ok(sdk instanceof NodeSDK);
+
+        await sdk.start();
+
+        // a non-noop meter indicates the metrics sdk was configured
+        assert.notStrictEqual(metrics.getMeter('test'), noopMeter);
       });
     });
   });
