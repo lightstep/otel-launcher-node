@@ -1,7 +1,7 @@
 echo "Preparing Release"
 
 echo  "Checking npm version ..."
-checkNpm=`node "./scripts/check-npm.js"`
+checkNpm=`node "./scripts/check-npm.mjs"`
 exitCode="$?"
 
 if [ "$exitCode" = "0" ]; then
