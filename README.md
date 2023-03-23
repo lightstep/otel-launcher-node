@@ -77,6 +77,11 @@ In addition the options below, the `configureOpenTelemetry` function will take a
 options supported by the OpenTelemetry Node SDK package and its return value is a NodeSDK instance.
 See the [OpenTelemetry Node SDK documentation](https://github.com/open-telemetry/opentelemetry-js/tree/main/packages/opentelemetry-sdk-trace-node) for more details.
 
+### Upgrade Guidelines
+
+#### 1.3.0 to 2.0.0
+* NodeSDK.start() is now synchronous and no longer returns a promise. At a minimum, calls to `sdk.start().then(...);` should be changed to `sdk.start();`. It is now recommended to use a `tracing.js` with `node -r`. See [the example](#setup-tracing) for details.
+
 ### Principles behind Launcher
 
 ##### 100% interoperability with OpenTelemetry
