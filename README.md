@@ -28,13 +28,13 @@ const sdk = lightstep.configureOpenTelemetry({
 sdk.start();
 
 // Gracefully shutdown the SDK
-const process = require("process");
-process.on("SIGTERM", () => {
+const process = require('process');
+process.on('SIGTERM', () => {
   sdk
     .shutdown()
     .then(
-      () => console.log("SDK shut down successfully"),
-      (err) => console.log("Error shutting down SDK", err)
+      () => console.log('SDK shut down successfully'),
+      (err) => console.log('Error shutting down SDK', err)
     )
     .finally(() => process.exit(0));
 });
