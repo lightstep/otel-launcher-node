@@ -8,7 +8,6 @@ import {
   diag,
   DiagLogger,
   DiagLogLevel,
-  DiagConsoleLogger,
 } from '@opentelemetry/api';
 import { B3InjectEncoding, B3Propagator } from '@opentelemetry/propagator-b3';
 import { NodeSDK } from '@opentelemetry/sdk-node';
@@ -53,6 +52,16 @@ const LS_DEFAULTS: Partial<types.LightstepNodeSDKConfiguration> = {
   propagators: PROPAGATION_FORMATS.B3,
 };
 
+const LOG_LEVEL_TO_STRING = {
+  [DiagLogLevel.NONE]: 'NONE',
+  [DiagLogLevel.ERROR]: 'ERROR',
+  [DiagLogLevel.WARN]: 'WARN',
+  [DiagLogLevel.INFO]: 'INFO',
+  [DiagLogLevel.DEBUG]: 'DEBUG',
+  [DiagLogLevel.VERBOSE]: 'VERBOSE',
+  [DiagLogLevel.ALL]: 'ALL',
+};
+
 const ACCESS_TOKEN_HEADER = 'Lightstep-Access-Token';
 const TELEMETRY_DISTRO_NAME = 'telemetry.distro.name';
 const TELEMETRY_DISTRO_VERSION = 'telemetry.distro.version';
@@ -83,33 +92,25 @@ export function configureOpenTelemetry(
 }
 
 /**
- * Setup up logger to use for Launcher. This may or may not be the logger
- * configured for OpenTelemetry. This is so we can print meaningful error
- * messages when configuration fails. Note, when provided by environment variable,
- * log level is interpreted as a string. In code configuration uses the LogLevel
- * enum from @openelemetry/core
+ * Setup up logger to use for Launcher. As of NodeSDK v1.10.0 a logger will be
+ * configured based on the value of process.env.OTEL_LOG_LEVEL. If
+ * OTEL_LOG_LEVEL is set, launcher will use the value as-is. If it's not set
+ * it will check for in-code configuration, and if not found, it will use the
+ * INFO as the default level.
  */
 function setupLogger(
   config: Partial<types.LightstepNodeSDKConfiguration>
 ): void {
-  if (config.logger) {
-    diag.setLogger(config.logger, config.logLevel);
+  // if already set, use as-is
+  if (process.env.OTEL_LOG_LEVEL) {
     return;
   }
 
-  let logLevel: DiagLogLevel;
-
   if (config.logLevel !== undefined) {
-    logLevel = config.logLevel;
-  } else if (process.env.OTEL_LOG_LEVEL) {
-    logLevel =
-      DiagLogLevel[
-        process.env.OTEL_LOG_LEVEL.toUpperCase() as keyof typeof DiagLogLevel
-      ];
+    process.env.OTEL_LOG_LEVEL = LOG_LEVEL_TO_STRING[config.logLevel];
   } else {
-    logLevel = DiagLogLevel.INFO;
+    process.env.OTEL_LOG_LEVEL = 'INFO';
   }
-  diag.setLogger(new DiagConsoleLogger(), logLevel);
 }
 
 /**

@@ -1,5 +1,5 @@
-const packageJson = require('package-json');
-const pJson = require('../package.json');
+import packageJson from 'package-json';
+import pJson from '../package.json' assert { type: 'json' };
 
 packageJson(pJson.name.toLowerCase())
   .then(result => {

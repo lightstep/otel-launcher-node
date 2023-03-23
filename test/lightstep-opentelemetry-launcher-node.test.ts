@@ -1,5 +1,6 @@
 import {
   context,
+  diag,
   DiagLogLevel,
   propagation,
   trace,
@@ -36,9 +37,11 @@ describe('Lightstep OpenTelemetry Launcher Node', () => {
         k => delete process.env[k]
       );
 
-      trace.disable();
+      diag.disable();
       context.disable();
+      trace.disable();
       propagation.disable();
+      metrics.disable();
     });
 
     describe('minimal configuration', () => {

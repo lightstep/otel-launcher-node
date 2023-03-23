@@ -12,25 +12,38 @@ npm i lightstep-opentelemetry-launcher-node
 
 ### Configure
 
-Minimal setup
+#### Setup Tracing
+
+Put the following in `tracing.js`
 
 ```javascript
-const {
-  lightstep,
-  opentelemetry,
-} = require('lightstep-opentelemetry-launcher-node');
+const { lightstep } = require('lightstep-opentelemetry-launcher-node');
 
 const sdk = lightstep.configureOpenTelemetry({
   accessToken: 'YOUR ACCESS TOKEN',
   serviceName: 'otel-example',
 });
 
-sdk.start().then(() => {
-  // Make sure to load any modules you use after otel is started so that it
-  // has its module loading hooks in place. In general, this is the right place
-  // to require your code.
-  require('./server-main.js').startServer();
+// initialize and start the SDK
+sdk.start();
+
+// Gracefully shutdown the SDK
+const process = require('process');
+process.on('SIGTERM', () => {
+  sdk
+    .shutdown()
+    .then(
+      () => console.log('SDK shut down successfully'),
+      (err) => console.log('Error shutting down SDK', err)
+    )
+    .finally(() => process.exit(0));
 });
+```
+
+#### Run Your Application
+
+```javascript
+node -r ./tracing.js app.js
 ```
 
 ### Customization
@@ -63,6 +76,11 @@ OpenTelemetry API and some examples of its usage:
 In addition the options below, the `configureOpenTelemetry` function will take any configuration
 options supported by the OpenTelemetry Node SDK package and its return value is a NodeSDK instance.
 See the [OpenTelemetry Node SDK documentation](https://github.com/open-telemetry/opentelemetry-js/tree/main/packages/opentelemetry-sdk-trace-node) for more details.
+
+### Upgrade Guidelines
+
+#### 1.3.0 to 2.0.0
+* NodeSDK.start() is now synchronous and no longer returns a promise. At a minimum, calls to `sdk.start().then(...);` should be changed to `sdk.start();`. It is now recommended to use a `tracing.js` with `node -r`. See [the example](#setup-tracing) for details.
 
 ### Principles behind Launcher
 
