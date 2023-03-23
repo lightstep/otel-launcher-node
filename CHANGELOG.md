@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+* Breaking change to `sdk.start()`! Previously `start` returned a promise, and users were encouraged to load their application code when the promise resolved. Improvements have been made to the NodeSDK package to make `start` synchronous. This allows users to setup tracing in a separate file that can be required using `node -r`. See the [readme](README#configure) and example for further details.
+* OpenTelemetry dependencies have been upgraded to API v1.4.1, core v1.10.1 and auto-instrumentations-node v0.36.4.
+
 ## 1.3.0
 * OpenTelemetry dependencies have been upgraded to API v1.3.0, core v1.8.0,
   with auto-instrumentations-node v0.35.0.
