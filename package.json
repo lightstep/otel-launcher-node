@@ -1,6 +1,6 @@
 {
   "name": "lightstep-opentelemetry-launcher-node",
-  "version": "1.3.0",
+  "version": "2.0.0",
   "description": "Lightstep Launcher - a configuration layer OpenTelemetry Node.js",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
