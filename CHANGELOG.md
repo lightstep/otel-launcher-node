@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 2.2.0
+* OpenTelemetry dependencies have been upgraded to API v1.4.1, core v1.13.0, with auto-instrumentations-node v0.37.0.
+
 ## 2.1.0
 * OpenTelemetry dependencies have been upgraded to core v1.12.0, with auto-instrumentations-node v0.36.5.
 
