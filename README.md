@@ -1,7 +1,7 @@
 # Launcher, a Lightstep Distro for OpenTelemetry 🚀 [Deprecated]
 
 In August 2023, [Lightstep became ServiceNow
-Cloud](https://docs.lightstep.com/docs/banner-faq) Observability. To ease the
+Cloud Observability](https://docs.lightstep.com/docs/banner-faq). To ease the
 transition, all code artifacts will continue to use the Lightstep name. You
 don't need to do anything to keep using this repository.
 
