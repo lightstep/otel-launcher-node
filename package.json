@@ -48,7 +48,7 @@
   "dependencies": {
     "@opentelemetry/api": "^1.4.1",
     "@opentelemetry/auto-instrumentations-node": "~0.37.0",
-    "@opentelemetry/core": "~1.13.0",
+    "@opentelemetry/core": "~1.14.0",
     "@opentelemetry/exporter-metrics-otlp-proto": "~0.39.1",
     "@opentelemetry/exporter-trace-otlp-proto": "~0.39.1",
     "@opentelemetry/propagator-b3": "~1.13.0",
