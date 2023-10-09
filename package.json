@@ -59,7 +59,7 @@
     "@opentelemetry/sdk-node": "^0.39.1",
     "@opentelemetry/sdk-trace-base": "~1.13.0",
     "@opentelemetry/sdk-trace-node": "~1.13.0",
-    "@opentelemetry/semantic-conventions": "~1.13.0"
+    "@opentelemetry/semantic-conventions": "~1.14.0"
   },
   "devDependencies": {
     "@types/mocha": "9.1.1",
